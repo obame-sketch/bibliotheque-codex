@@ -1,0 +1,106 @@
+@startuml
+title "Implémentation - Application (PHP/Laravel) - Bibliothèque Numérique"
+
+namespace App\Application\Lecteur\DTO {
+  class EmprunterLivreDto {
+    + string $lecteurId
+    + string $livreId
+  }
+  class RetournerLivreDto {
+    + string $empruntId
+  }
+}
+
+namespace App\Application\Lecteur\UseCase {
+  class ConsulterCatalogueUseCase {
+    - LivreRepositoryInterface $livreRepository
+    + __construct(LivreRepositoryInterface $livreRepository)
+    + execute(): array
+  }
+  class RechercherLivreUseCase {
+    - LivreRepositoryInterface $livreRepository
+    + __construct(LivreRepositoryInterface $livreRepository)
+    + execute(string $keyword): array
+  }
+  class EmprunterLivreUseCase {
+    - LecteurRepositoryInterface $lecteurRepository
+    - ServiceDisponibilite $serviceDisponibilite
+    - ServiceGestionEmprunt $serviceGestionEmprunt
+    + __construct(LecteurRepositoryInterface $lecteurRepo, ServiceDisponibilite $serviceDispo, ServiceGestionEmprunt $serviceEmprunt)
+    + execute(EmprunterLivreDto $dto): Emprunt
+  }
+  class RetournerLivreUseCase {
+    - EmpruntRepositoryInterface $empruntRepository
+    - ServiceGestionEmprunt $serviceGestionEmprunt
+    + __construct(EmpruntRepositoryInterface $empruntRepository, ServiceGestionEmprunt $serviceGestionEmprunt)
+    + execute(RetournerLivreDto $dto): void
+  }
+  class VoirMesEmpruntsUseCase {
+    - EmpruntRepositoryInterface $empruntRepository
+    + __construct(EmpruntRepositoryInterface $empruntRepository)
+    + execute(string $lecteurId): array
+  }
+  class VerifierDisponibiliteUseCase {
+    - ServiceDisponibilite $serviceDisponibilite
+    + __construct(ServiceDisponibilite $serviceDisponibilite)
+    + execute(string $livreId): bool
+  }
+}
+
+namespace App\Application\Bibliothecaire\DTO {
+  class AjouterLivreDto {
+    + string $titre
+    + string $auteur
+    + string $isbn
+    + DateTime $datePublication
+    + int $nombreExemplaires
+  }
+  class ModifierLivreDto {
+    + ?string $titre
+    + ?string $auteur
+    + ?string $isbn
+    + ?DateTime $datePublication
+  }
+  class EnregistrerEmpruntDto {
+    + string $lecteurId
+    + string $exemplaireId
+  }
+}
+
+namespace App\Application\Bibliothecaire\UseCase {
+  class AjouterLivreUseCase {
+    - LivreRepositoryInterface $livreRepository
+    - ExemplaireRepositoryInterface $exemplaireRepository
+    + __construct(LivreRepositoryInterface $livreRepo, ExemplaireRepositoryInterface $exemplaireRepo)
+    + execute(AjouterLivreDto $dto): Livre
+  }
+  class ModifierLivreUseCase {
+    - LivreRepositoryInterface $livreRepository
+    + __construct(LivreRepositoryInterface $livreRepository)
+    + execute(string $livreId, ModifierLivreDto $dto): void
+  }
+  class SupprimerLivreUseCase {
+    - LivreRepositoryInterface $livreRepository
+    + __construct(LivreRepositoryInterface $livreRepository)
+    + execute(string $livreId): void
+  }
+  class EnregistrerEmpruntUseCase {
+    - LecteurRepositoryInterface $lecteurRepository
+    - ExemplaireRepositoryInterface $exemplaireRepository
+    - ServiceGestionEmprunt $serviceGestionEmprunt
+    + __construct(LecteurRepositoryInterface $lecteurRepo, ExemplaireRepositoryInterface $exemplaireRepo, ServiceGestionEmprunt $serviceGestionEmprunt)
+    + execute(EnregistrerEmpruntDto $dto): Emprunt
+  }
+  class EnregistrerRetourUseCase {
+    - EmpruntRepositoryInterface $empruntRepository
+    - ServiceGestionEmprunt $serviceGestionEmprunt
+    + __construct(EmpruntRepositoryInterface $empruntRepository, ServiceGestionEmprunt $serviceGestionEmprunt)
+    + execute(string $empruntId): void
+  }
+  class ConsulterTousEmpruntsUseCase {
+    - EmpruntRepositoryInterface $empruntRepository
+    + __construct(EmpruntRepositoryInterface $empruntRepository)
+    + execute(): array
+  }
+}
+@enduml

@@ -1,18 +1,17 @@
-# Conception du projet Bibliotheque Numerique
+# Conception du projet hotel
 
-Ce dossier contient l’ensemble des artefacts de conception du projet **AgroConnect**.  
+Ce dossier contient l’ensemble des artefacts de conception du projet **hotel**.  
 La modélisation suit une architecture en couches (domaine, application, infrastructure) et trois niveaux de vues : conceptuelle, spécification et implémentation.
 
 
 ## Cas d’usage (`cas-usage`)
 
-Ces diagrammes décrivent les interactions entre les acteurs (consommateur, agriculteur, transporteur) et le système.
+Ces diagrammes décrivent les interactions entre les acteurs (Visiteur, hôtelière) et le système.
 
 | Fichier | Description |
 |---------|-------------|
-| `1 - scenario-du-consommateur.puml` | Parcours d’un consommateur : recherche de produits, commande, suivi de livraison. |
-| `2 - scenario-de-agriculteur.puml` | Actions de l’agriculteur : mise en vente, gestion des stocks, réception des commandes. |
-| `3 - scenario-du-transporteur.puml` | Rôle du transporteur : prise en charge des livraisons, mise à jour du statut. |
+| `1 - Diagramme cas d'utilisation Visiteur` | Parcours d’un Visiteur  |
+| `2 - Diagramme cas d'utilisation Structure hôtelière` | Structure hôtelière |
 
 ---
 
@@ -26,7 +25,7 @@ Modélisation métier de haut niveau, indépendante de toute technologie.
 
 | Fichier | Contenu |
 |---------|---------|
-| `1 - structure.puml` | Entités principales et leurs relations (agrégats, value objects). |
+| `1 - Diagramme conceptuel (classes métier)` | Entités principales et leurs relations (agrégats, value objects). |
 | `info.txt` | Notes et explications complémentaires sur la vue conceptuelle. |
 
 ### 2 – Vue spécification

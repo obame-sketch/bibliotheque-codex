@@ -1,0 +1,824 @@
+# =============================================================================
+# 🚀 AUTO VERSIONING — TAGS & RELEASES
+# =============================================================================
+# Fichier : .github/workflows/auto-versioning.yml
+#
+# Priorité de version (ordre décroissant) :
+#   1. 🎯 Milestone de la PR  → ex: "2.0.1" ou "v2.0.1"
+#   2. 🏷️  Dernier git tag    → incrément automatique MINOR ou PATCH
+#   3. 🆕 Aucun tag existant  → 0.0.0
+#
+# Flux :
+#   feature/* | fix/* | doc/*  →  recette   💬 Commentaire STAGE
+#   recette                    →  develop   🏷️  Création / Mise à jour TAG
+#   develop                    →  main      🚀  Création / Mise à jour RELEASE
+#   hotfix/*                   →  main      🔥  PATCH Tag + Release
+# =============================================================================
+
+name: 🚀 Auto Versioning & Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - recette
+      - develop
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+# ---------------------------------------------------------------------------
+# 🔧 FONCTION PARTAGÉE : résolution de version
+# ---------------------------------------------------------------------------
+# La logique de résolution est dupliquée dans chaque job (les workflows
+# GitHub Actions ne supportent pas les fonctions partagées entre jobs).
+# Le même script shell est utilisé dans les 3 jobs concernés.
+#
+# Algorithme de résolution :
+#
+#   SI milestone présent ET titre = semver valide
+#     → VERSION = milestone (ex: 2.0.1)
+#   SINON SI dernier git tag existe
+#     → VERSION = tag + incrément (MINOR si feat:, sinon PATCH)
+#   SINON
+#     → VERSION = 0.0.0
+# ---------------------------------------------------------------------------
+
+jobs:
+
+  # ============================================================
+  # 💬 STAGE — feature/* | fix/* | doc/*  →  recette
+  # ============================================================
+  stage-comment:
+    name: 💬 Commentaire STAGE Version
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'recette' &&
+      (
+        startsWith(github.event.pull_request.head.ref, 'feature/') ||
+        startsWith(github.event.pull_request.head.ref, 'fix/') ||
+        startsWith(github.event.pull_request.head.ref, 'doc/')
+      )
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Lire le Milestone associé à la PR
+        id: milestone
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const milestone = pr.milestone;
+            if (milestone && milestone.title) {
+              const raw = milestone.title.trim();
+              const match = raw.match(/^v?(\d+\.\d+\.\d+)$/);
+              if (match) {
+                console.log('✅ Milestone trouvé : ' + raw + ' → version ' + match[1]);
+                core.setOutput('version', match[1]);
+                core.setOutput('found', 'true');
+                core.setOutput('title', raw);
+              } else {
+                console.log('⚠️  Milestone "' + raw + '" non semver — fallback sur git tags');
+                core.setOutput('found', 'false');
+                core.setOutput('title', raw);
+              }
+            } else {
+              console.log('ℹ️  Aucun Milestone sur cette PR — fallback sur git tags');
+              core.setOutput('found', 'false');
+              core.setOutput('title', '');
+            }
+
+      - name: Calculer la version STAGE
+        id: version
+        env:
+          MILESTONE_FOUND: ${{ steps.milestone.outputs.found }}
+          MILESTONE_VERSION: ${{ steps.milestone.outputs.version }}
+        run: |
+          git fetch --tags --quiet
+
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          BRANCH_TYPE=$(echo "$BRANCH" | cut -d/ -f1)
+          ISSUE_NUM=$(echo "$BRANCH" | grep -oE '[0-9]+' | head -1)
+
+          if [ "$MILESTONE_FOUND" = "true" ] && [ -n "$MILESTONE_VERSION" ]; then
+            VERSION="$MILESTONE_VERSION"
+            SOURCE="milestone"
+          else
+            LATEST_TAG=$(git tag --sort=-version:refname \
+              | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
+              | head -1)
+            if [ -z "$LATEST_TAG" ]; then
+              VERSION="0.0.0"
+              SOURCE="default"
+            else
+              TAG_CLEAN="${LATEST_TAG#v}"
+              MAJOR=$(echo "$TAG_CLEAN" | cut -d. -f1)
+              MINOR=$(echo "$TAG_CLEAN" | cut -d. -f2)
+              PATCH=$(echo "$TAG_CLEAN" | cut -d. -f3)
+              if [ "$BRANCH_TYPE" = "fix" ]; then
+                PATCH=$((PATCH + 1))
+              else
+                MINOR=$((MINOR + 1))
+                PATCH=0
+              fi
+              VERSION="$MAJOR.$MINOR.$PATCH"
+              SOURCE="git-tag ($LATEST_TAG)"
+            fi
+          fi
+
+          echo "version=$VERSION"         >> "$GITHUB_OUTPUT"
+          echo "source=$SOURCE"           >> "$GITHUB_OUTPUT"
+          echo "branch_type=$BRANCH_TYPE" >> "$GITHUB_OUTPUT"
+          echo "issue=${ISSUE_NUM:+#${ISSUE_NUM}}" >> "$GITHUB_OUTPUT"
+          [ -z "$ISSUE_NUM" ] && echo "issue=N/A" >> "$GITHUB_OUTPUT"
+          echo "✅ Version STAGE : $VERSION (source: $SOURCE)"
+
+      - name: Poster le commentaire STAGE sur la PR
+        uses: actions/github-script@v7
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SOURCE: ${{ steps.version.outputs.source }}
+          ISSUE: ${{ steps.version.outputs.issue }}
+          BRANCH_TYPE: ${{ steps.version.outputs.branch_type }}
+          MILESTONE_TITLE: ${{ steps.milestone.outputs.title }}
+        with:
+          script: |
+            const version        = process.env.VERSION;
+            const source         = process.env.SOURCE;
+            const issue          = process.env.ISSUE;
+            const branchType     = process.env.BRANCH_TYPE;
+            const milestoneTitle = process.env.MILESTONE_TITLE;
+            const branch         = context.payload.pull_request.head.ref;
+            const prTitle        = context.payload.pull_request.title;
+            const author         = context.payload.pull_request.user.login;
+            const mergedAt       = new Date().toISOString().split('T')[0];
+            const emojiMap       = { feature: '✨', fix: '🐛', doc: '📚' };
+            const emoji          = emojiMap[branchType] || '🔧';
+
+            const sourceLabel = source === 'milestone'
+              ? '🎯 Milestone (`' + milestoneTitle + '`)'
+              : source === 'default'
+                ? '🆕 Valeur initiale (aucun tag ni milestone)'
+                : '🏷️ Git tag (' + source + ')';
+
+            const body = [
+              '## 🟡 STAGE Version — `' + version + '`',
+              '',
+              emoji + ' Branche `' + branch + '` fusionnée dans `recette`.',
+              '',
+              '| Champ | Valeur |',
+              '|---|---|',
+              '| **Version** | `' + version + '` |',
+              '| **Source version** | ' + sourceLabel + ' |',
+              '| **Type** | 🟡 STAGE (version candidate) |',
+              '| **Branche** | `' + branch + '` |',
+              '| **Issue** | ' + issue + ' |',
+              '| **Auteur** | @' + author + ' |',
+              '| **Date merge** | ' + mergedAt + ' |',
+              '| **Description** | STAGE version — ' + prTitle + ' |',
+              '',
+              '---',
+              '> ⚡ **Prochaine étape :** fusionner `recette` → `develop` pour créer ou mettre à jour le **TAG officiel `v' + version + '`**.',
+              '> Assurez-vous que le Milestone `' + (milestoneTitle || version) + '` est bien associé à cette PR.',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: body,
+            });
+
+  # ============================================================
+  # 🏷️ TAG — recette → develop
+  # ============================================================
+  create-tag:
+    name: 🏷️ Créer / Mettre à jour TAG (recette → develop)
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'develop' &&
+      github.event.pull_request.head.ref == 'recette'
+    runs-on: ubuntu-latest
+
+    outputs:
+      new_tag:     ${{ steps.compute_tag.outputs.new_tag }}
+      version:     ${{ steps.compute_tag.outputs.version }}
+      tag_updated: ${{ steps.compute_tag.outputs.tag_updated }}
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lire le Milestone associé à la PR
+        id: milestone
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const milestone = pr.milestone;
+            if (milestone && milestone.title) {
+              const raw   = milestone.title.trim();
+              const match = raw.match(/^v?(\d+\.\d+\.\d+)$/);
+              if (match) {
+                console.log('✅ Milestone trouvé : ' + raw + ' → version ' + match[1]);
+                core.setOutput('version', match[1]);
+                core.setOutput('found', 'true');
+                core.setOutput('title', raw);
+              } else {
+                console.log('⚠️  Milestone "' + raw + '" non semver — fallback sur git tags');
+                core.setOutput('found', 'false');
+                core.setOutput('title', raw);
+              }
+            } else {
+              console.log('ℹ️  Aucun Milestone — fallback sur git tags');
+              core.setOutput('found', 'false');
+              core.setOutput('title', '');
+            }
+
+      # ── FIX 2 : Si le tag existe déjà (Milestone), on le supprime et on
+      #            le recrée sur HEAD pour intégrer les nouveaux commits.
+      #            Plus de exit 1 — c'est une mise à jour, pas une erreur.
+      - name: Calculer et créer / mettre à jour le TAG
+        id: compute_tag
+        env:
+          MILESTONE_FOUND:    ${{ steps.milestone.outputs.found }}
+          MILESTONE_VERSION:  ${{ steps.milestone.outputs.version }}
+        run: |
+          git fetch --tags --quiet
+
+          TAG_UPDATED="false"
+
+          if [ "$MILESTONE_FOUND" = "true" ] && [ -n "$MILESTONE_VERSION" ]; then
+            VERSION="$MILESTONE_VERSION"
+            SOURCE="milestone"
+
+            # FIX 2 — Tag existant : suppression + recréation (mise à jour)
+            if git tag | grep -q "^v${VERSION}$"; then
+              echo "🔄 Tag v${VERSION} déjà existant — suppression et recréation sur HEAD..."
+              git tag -d "v${VERSION}"
+              git push origin ":refs/tags/v${VERSION}" || true
+              TAG_UPDATED="true"
+            fi
+
+          else
+            LATEST_TAG=$(git tag --sort=-version:refname \
+              | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
+              | head -1)
+
+            if [ -z "$LATEST_TAG" ]; then
+              VERSION="0.0.0"
+              SOURCE="default"
+            else
+              TAG_CLEAN="${LATEST_TAG#v}"
+              MAJOR=$(echo "$TAG_CLEAN" | cut -d. -f1)
+              MINOR=$(echo "$TAG_CLEAN" | cut -d. -f2)
+              PATCH=$(echo "$TAG_CLEAN" | cut -d. -f3)
+
+              COMMITS=$(git log "${LATEST_TAG}..HEAD" --oneline --no-merges 2>/dev/null \
+                || git log --oneline --no-merges -30)
+
+              if echo "$COMMITS" | grep -qiE '^[a-f0-9]+ feat'; then
+                MINOR=$((MINOR + 1))
+                PATCH=0
+              else
+                PATCH=$((PATCH + 1))
+              fi
+              VERSION="$MAJOR.$MINOR.$PATCH"
+              SOURCE="git-tag ($LATEST_TAG)"
+            fi
+          fi
+
+          NEW_TAG="v$VERSION"
+
+          echo "new_tag=$NEW_TAG"         >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION"         >> "$GITHUB_OUTPUT"
+          echo "source=$SOURCE"           >> "$GITHUB_OUTPUT"
+          echo "tag_updated=$TAG_UPDATED" >> "$GITHUB_OUTPUT"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          git tag -a "$NEW_TAG" -m "TAG version $VERSION — $PR_TITLE [source: $SOURCE]"
+          git push origin "$NEW_TAG"
+
+          if [ "$TAG_UPDATED" = "true" ]; then
+            echo "✅ Tag $NEW_TAG MIS À JOUR sur HEAD (source: $SOURCE)."
+          else
+            echo "✅ Tag $NEW_TAG CRÉÉ (source: $SOURCE)."
+          fi
+
+      - name: Poster le commentaire TAG sur la PR
+        uses: actions/github-script@v7
+        env:
+          NEW_TAG:         ${{ steps.compute_tag.outputs.new_tag }}
+          VERSION:         ${{ steps.compute_tag.outputs.version }}
+          SOURCE:          ${{ steps.compute_tag.outputs.source }}
+          TAG_UPDATED:     ${{ steps.compute_tag.outputs.tag_updated }}
+          MILESTONE_TITLE: ${{ steps.milestone.outputs.title }}
+        with:
+          script: |
+            const tag            = process.env.NEW_TAG;
+            const version        = process.env.VERSION;
+            const source         = process.env.SOURCE;
+            const tagUpdated     = process.env.TAG_UPDATED === 'true';
+            const milestoneTitle = process.env.MILESTONE_TITLE;
+            const prTitle        = context.payload.pull_request.title;
+            const author         = context.payload.pull_request.user.login;
+            const mergedAt       = new Date().toISOString().split('T')[0];
+            const repoUrl        = 'https://github.com/' + context.repo.owner + '/' + context.repo.repo;
+
+            const sourceLabel = source === 'milestone'
+              ? '🎯 Milestone (`' + milestoneTitle + '`)'
+              : source === 'default'
+                ? '🆕 Valeur initiale'
+                : '🏷️ Git tag (' + source + ')';
+
+            const actionLabel = tagUpdated ? '🔄 MIS À JOUR' : '✅ CRÉÉ';
+            const actionNote  = tagUpdated
+              ? '> 🔄 Tag existant **mis à jour** sur HEAD — les nouveaux commits du Milestone sont intégrés.'
+              : '> ✅ **Prochaine étape :** fusionner `develop` → `main` pour créer la **RELEASE officielle `' + tag + '`**.';
+
+            const body = [
+              '## 🏷️ TAG ' + actionLabel + ' — `' + tag + '`',
+              '',
+              '`recette` fusionnée dans `develop` avec succès.',
+              '',
+              '| Champ | Valeur |',
+              '|---|---|',
+              '| **Tag** | [`' + tag + '`](' + repoUrl + '/releases/tag/' + tag + ') |',
+              '| **Version** | `' + version + '` |',
+              '| **Source version** | ' + sourceLabel + ' |',
+              '| **Action** | ' + actionLabel + ' |',
+              '| **Auteur** | @' + author + ' |',
+              '| **Date merge** | ' + mergedAt + ' |',
+              '| **Description** | TAG version — ' + prTitle + ' |',
+              '',
+              '---',
+              actionNote,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: body,
+            });
+
+  # ============================================================
+  # 🚀 RELEASE — develop → main
+  # ============================================================
+  create-release:
+    name: 🚀 Créer / Mettre à jour RELEASE (develop → main)
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.ref == 'develop'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Identifier le tag de release
+        id: get_tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr        = context.payload.pull_request;
+            const milestone = pr.milestone;
+            let   version   = null;
+            let   source    = 'git-tag';
+
+            if (milestone && milestone.title) {
+              const raw   = milestone.title.trim();
+              const match = raw.match(/^v?(\d+\.\d+\.\d+)$/);
+              if (match) {
+                version = match[1];
+                source  = 'milestone';
+                console.log('✅ Version depuis Milestone : ' + version);
+              }
+            }
+
+            core.setOutput('milestone_version', version || '');
+            core.setOutput('source', source);
+            core.setOutput('milestone_title', milestone ? milestone.title : '');
+
+      - name: Récupérer et valider le tag git
+        id: resolve_tag
+        env:
+          MILESTONE_VERSION: ${{ steps.get_tag.outputs.milestone_version }}
+          SOURCE:            ${{ steps.get_tag.outputs.source }}
+        run: |
+          git fetch --tags --quiet
+
+          if [ -n "$MILESTONE_VERSION" ]; then
+            CANDIDATE_TAG=""
+            for TRY in "v${MILESTONE_VERSION}" "${MILESTONE_VERSION}"; do
+              if git tag | grep -qE "^${TRY}$"; then
+                CANDIDATE_TAG="$TRY"
+                break
+              fi
+            done
+            if [ -z "$CANDIDATE_TAG" ]; then
+              echo "::warning::Tag correspondant au Milestone v${MILESTONE_VERSION} introuvable — utilisation du dernier tag"
+              SOURCE="git-tag-fallback"
+            else
+              LATEST_TAG="$CANDIDATE_TAG"
+              echo "✅ Tag Milestone trouvé : $LATEST_TAG"
+            fi
+          fi
+
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG=$(git tag --sort=-version:refname \
+              | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
+              | head -1)
+          fi
+
+          if [ -z "$LATEST_TAG" ]; then
+            echo "::error::Aucun tag trouvé. Mergez d'abord recette → develop."
+            exit 1
+          fi
+
+          # ── FIX 1 : prev_tag — tag immédiatement précédent dans la liste
+          #    triée descendante (awk passe en mode "found" sur LATEST_TAG
+          #    puis imprime la première ligne suivante = prédécesseur direct).
+          LATEST_TAG_ESC=$(printf '%s\n' "$LATEST_TAG" | sed 's/[.[\*^${}\\|()]/\\&/g')
+          PREV_TAG=$(git tag --sort=-version:refname \
+            | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
+            | awk "found{print; exit} /^${LATEST_TAG_ESC}\$/{found=1}")
+
+          echo "latest_tag=$LATEST_TAG"  >> "$GITHUB_OUTPUT"
+          echo "prev_tag=$PREV_TAG"      >> "$GITHUB_OUTPUT"
+          echo "version=${LATEST_TAG#v}" >> "$GITHUB_OUTPUT"
+          echo "✅ Tag de release : $LATEST_TAG  |  Précédent : ${PREV_TAG:-aucun}"
+
+      - name: Générer les notes de version
+        run: |
+          TAG="${{ steps.resolve_tag.outputs.latest_tag }}"
+          PREV="${{ steps.resolve_tag.outputs.prev_tag }}"
+          VERSION="${{ steps.resolve_tag.outputs.version }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          DATE=$(date +'%Y-%m-%d')
+          REPO="${{ github.repository }}"
+          MILESTONE_TITLE="${{ steps.get_tag.outputs.milestone_title }}"
+
+          if [ -n "$PREV" ]; then
+            COMMITS=$(git log "${PREV}..${TAG}" --pretty=format:"- %s (%h)" --no-merges 2>/dev/null || echo "")
+          else
+            COMMITS=$(git log "${TAG}" --pretty=format:"- %s (%h)" --no-merges | head -30 || echo "")
+          fi
+
+          FEATURES=$(echo "$COMMITS"  | grep -E "^- feat"     || true)
+          FIXES=$(echo "$COMMITS"     | grep -E "^- fix"      || true)
+          DOCS=$(echo "$COMMITS"      | grep -E "^- docs"     || true)
+          REFACTORS=$(echo "$COMMITS" | grep -E "^- refactor" || true)
+          PERFS=$(echo "$COMMITS"     | grep -E "^- perf"     || true)
+          CI=$(echo "$COMMITS"        | grep -E "^- ci"       || true)
+          OTHERS=$(echo "$COMMITS"    | grep -vE "^- (feat|fix|docs|refactor|perf|ci|test)" || true)
+
+          {
+            echo "## 📦 Release \`${TAG}\`"
+            echo ""
+            echo "> **Date :** ${DATE}  |  **Version :** \`${VERSION}\`"
+            [ -n "$MILESTONE_TITLE" ] && echo "> **Milestone :** ${MILESTONE_TITLE}"
+            echo ""
+            echo "---"
+            echo ""
+            [ -n "$FEATURES" ]  && echo "### ✨ Nouvelles fonctionnalités" && echo "" && echo "$FEATURES"   && echo ""
+            [ -n "$FIXES" ]     && echo "### 🐛 Corrections de bugs"       && echo "" && echo "$FIXES"     && echo ""
+            [ -n "$PERFS" ]     && echo "### ⚡ Performances"               && echo "" && echo "$PERFS"     && echo ""
+            [ -n "$DOCS" ]      && echo "### 📚 Documentation"              && echo "" && echo "$DOCS"      && echo ""
+            [ -n "$REFACTORS" ] && echo "### 🔧 Refactoring"                && echo "" && echo "$REFACTORS" && echo ""
+            [ -n "$CI" ]        && echo "### 🤖 CI/CD"                      && echo "" && echo "$CI"        && echo ""
+            [ -n "$OTHERS" ]    && echo "### 🔀 Autres changements"         && echo "" && echo "$OTHERS"    && echo ""
+            echo "---"
+            echo ""
+            [ -n "$PREV" ] && echo "**Full changelog :** [\`${PREV}...${TAG}\`](https://github.com/${REPO}/compare/${PREV}...${TAG})"
+          } > release_notes.md
+
+          echo "✅ Notes de version générées."
+
+      # ── FIX 3 : Vérifie si la release existe déjà → updateRelease.
+      #    Sinon → createRelease. Plus jamais de doublon ni d'erreur.
+      - name: Créer ou mettre à jour la GitHub Release
+        uses: actions/github-script@v7
+        env:
+          LATEST_TAG: ${{ steps.resolve_tag.outputs.latest_tag }}
+          VERSION:    ${{ steps.resolve_tag.outputs.version }}
+        with:
+          script: |
+            const fs      = require('fs');
+            const tag     = process.env.LATEST_TAG;
+            const version = process.env.VERSION;
+            const notes   = fs.readFileSync('release_notes.md', 'utf8');
+            const prTitle = context.payload.pull_request.title;
+            const author  = context.payload.pull_request.user.login;
+
+            // FIX 3 — Cherche une release existante pour ce tag
+            let existingReleaseId = null;
+            try {
+              const existing = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                tag:   tag,
+              });
+              existingReleaseId = existing.data.id;
+              console.log('🔄 Release existante trouvée (id: ' + existingReleaseId + ') — mise à jour...');
+            } catch (_) {
+              console.log('🆕 Aucune release existante pour ' + tag + ' — création...');
+            }
+
+            let release;
+            const releasePayload = {
+              owner:      context.repo.owner,
+              repo:       context.repo.repo,
+              tag_name:   tag,
+              name:       '🚀 Release ' + tag + ' — ' + prTitle,
+              body:       notes,
+              draft:      false,
+              prerelease: false,
+            };
+
+            if (existingReleaseId) {
+              const { data } = await github.rest.repos.updateRelease({
+                ...releasePayload,
+                release_id: existingReleaseId,
+              });
+              release = data;
+            } else {
+              const { data } = await github.rest.repos.createRelease(releasePayload);
+              release = data;
+            }
+
+            const actionLabel = existingReleaseId ? '🔄 MISE À JOUR' : '✅ CRÉÉE';
+
+            const body = [
+              '## 🚀 RELEASE ' + actionLabel + ' — `' + tag + '`',
+              '',
+              '`develop` fusionnée dans `main` avec succès.',
+              '',
+              '| Champ | Valeur |',
+              '|---|---|',
+              '| **Release** | [🔗 Voir la release](' + release.html_url + ') |',
+              '| **Tag** | `' + tag + '` |',
+              '| **Version** | `' + version + '` |',
+              '| **Action** | ' + actionLabel + ' |',
+              '| **Auteur** | @' + author + ' |',
+              '| **Description** | RELEASE version — ' + prTitle + ' |',
+              '',
+              '---',
+              '> 🎉 La version `' + version + '` est maintenant **disponible en production**.',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: body,
+            });
+
+  # ============================================================
+  # 🔥 HOTFIX — hotfix/* → main
+  # ============================================================
+  hotfix-release:
+    name: 🔥 HOTFIX Release (hotfix/* → main)
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main' &&
+      startsWith(github.event.pull_request.head.ref, 'hotfix/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lire le Milestone associé à la PR
+        id: milestone
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const milestone = pr.milestone;
+            if (milestone && milestone.title) {
+              const raw   = milestone.title.trim();
+              const match = raw.match(/^v?(\d+\.\d+\.\d+)$/);
+              if (match) {
+                core.setOutput('version', match[1]);
+                core.setOutput('found', 'true');
+                core.setOutput('title', raw);
+                console.log('✅ Milestone hotfix : ' + match[1]);
+              } else {
+                core.setOutput('found', 'false');
+                core.setOutput('title', raw);
+              }
+            } else {
+              core.setOutput('found', 'false');
+              core.setOutput('title', '');
+            }
+
+      # ── FIX 2 (hotfix) : même logique que create-tag
+      - name: Calculer et créer / mettre à jour le tag PATCH
+        id: hotfix_tag
+        env:
+          MILESTONE_FOUND:   ${{ steps.milestone.outputs.found }}
+          MILESTONE_VERSION: ${{ steps.milestone.outputs.version }}
+        run: |
+          git fetch --tags --quiet
+
+          TAG_UPDATED="false"
+
+          if [ "$MILESTONE_FOUND" = "true" ] && [ -n "$MILESTONE_VERSION" ]; then
+            VERSION="$MILESTONE_VERSION"
+            SOURCE="milestone"
+
+            # FIX 2 — Tag existant : suppression + recréation
+            if git tag | grep -q "^v${VERSION}$"; then
+              echo "🔄 Tag hotfix v${VERSION} déjà existant — mise à jour sur HEAD..."
+              git tag -d "v${VERSION}"
+              git push origin ":refs/tags/v${VERSION}" || true
+              TAG_UPDATED="true"
+            fi
+          else
+            LATEST_TAG=$(git tag --sort=-version:refname \
+              | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
+              | head -1)
+
+            if [ -z "$LATEST_TAG" ]; then
+              MAJOR=0; MINOR=0; PATCH=0
+            else
+              TAG_CLEAN="${LATEST_TAG#v}"
+              MAJOR=$(echo "$TAG_CLEAN" | cut -d. -f1)
+              MINOR=$(echo "$TAG_CLEAN" | cut -d. -f2)
+              PATCH=$(echo "$TAG_CLEAN" | cut -d. -f3)
+              PATCH=$((PATCH + 1))
+            fi
+            VERSION="$MAJOR.$MINOR.$PATCH"
+            SOURCE="git-tag (${LATEST_TAG:-aucun})"
+          fi
+
+          NEW_TAG="v$VERSION"
+
+          # ── FIX 1 (hotfix) : prev_tag = prédécesseur immédiat
+          NEW_TAG_ESC=$(printf '%s\n' "$NEW_TAG" | sed 's/[.[\*^${}\\|()]/\\&/g')
+          PREV_TAG=$(git tag --sort=-version:refname \
+            | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
+            | grep -v "^${NEW_TAG}$" \
+            | head -1)
+          # Si le nouveau tag existait déjà (mis à jour), le prédécesseur
+          # est la 2e entrée de la liste ; sinon c'est la 1re ≠ NEW_TAG.
+          # La ligne ci-dessus couvre les deux cas car NEW_TAG n'est pas
+          # encore dans la liste (tag supprimé plus haut).
+
+          echo "new_tag=$NEW_TAG"         >> "$GITHUB_OUTPUT"
+          echo "prev_tag=$PREV_TAG"       >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION"         >> "$GITHUB_OUTPUT"
+          echo "source=$SOURCE"           >> "$GITHUB_OUTPUT"
+          echo "tag_updated=$TAG_UPDATED" >> "$GITHUB_OUTPUT"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+
+          git tag -a "$NEW_TAG" -m "HOTFIX $VERSION — $PR_TITLE [from: $BRANCH] [source: $SOURCE]"
+          git push origin "$NEW_TAG"
+
+          if [ "$TAG_UPDATED" = "true" ]; then
+            echo "✅ Tag hotfix $NEW_TAG MIS À JOUR (source: $SOURCE)."
+          else
+            echo "✅ Tag hotfix $NEW_TAG CRÉÉ (source: $SOURCE)."
+          fi
+
+      # ── FIX 3 (hotfix) : updateRelease si elle existe déjà
+      - name: Créer ou mettre à jour la GitHub Release du hotfix
+        uses: actions/github-script@v7
+        env:
+          NEW_TAG:         ${{ steps.hotfix_tag.outputs.new_tag }}
+          VERSION:         ${{ steps.hotfix_tag.outputs.version }}
+          PREV_TAG:        ${{ steps.hotfix_tag.outputs.prev_tag }}
+          SOURCE:          ${{ steps.hotfix_tag.outputs.source }}
+          TAG_UPDATED:     ${{ steps.hotfix_tag.outputs.tag_updated }}
+          MILESTONE_TITLE: ${{ steps.milestone.outputs.title }}
+        with:
+          script: |
+            const tag            = process.env.NEW_TAG;
+            const version        = process.env.VERSION;
+            const prevTag        = process.env.PREV_TAG;
+            const source         = process.env.SOURCE;
+            const tagUpdated     = process.env.TAG_UPDATED === 'true';
+            const milestoneTitle = process.env.MILESTONE_TITLE;
+            const branch         = context.payload.pull_request.head.ref;
+            const prTitle        = context.payload.pull_request.title;
+            const author         = context.payload.pull_request.user.login;
+            const date           = new Date().toISOString().split('T')[0];
+            const repoUrl        = 'https://github.com/' + context.repo.owner + '/' + context.repo.repo;
+
+            const compareUrl = prevTag
+              ? repoUrl + '/compare/' + prevTag + '...' + tag
+              : '';
+
+            const sourceLabel = source === 'milestone'
+              ? '🎯 Milestone (`' + milestoneTitle + '`)'
+              : '🏷️ Git tag (' + source + ')';
+
+            const releaseBody = [
+              '## 🔥 Hotfix Release `' + tag + '`',
+              '',
+              '> **Correctif d\'urgence déployé directement en production.**',
+              '',
+              '| Champ | Valeur |',
+              '|---|---|',
+              '| **Version** | `' + version + '` |',
+              '| **Source version** | ' + sourceLabel + ' |',
+              '| **Type** | 🔥 PATCH (hotfix) |',
+              '| **Branche** | `' + branch + '` |',
+              '| **Auteur** | @' + author + ' |',
+              '| **Date** | ' + date + ' |',
+              '',
+              '### 🐛 Correction appliquée',
+              '',
+              prTitle,
+              '',
+              '---',
+              compareUrl ? '**Changements :** [' + prevTag + '...' + tag + '](' + compareUrl + ')' : '',
+            ].join('\n');
+
+            // FIX 3 — Cherche une release existante
+            let existingReleaseId = null;
+            try {
+              const existing = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                tag:   tag,
+              });
+              existingReleaseId = existing.data.id;
+              console.log('🔄 Release hotfix existante (id: ' + existingReleaseId + ') — mise à jour...');
+            } catch (_) {
+              console.log('🆕 Nouvelle release hotfix pour ' + tag);
+            }
+
+            let release;
+            const payload = {
+              owner:      context.repo.owner,
+              repo:       context.repo.repo,
+              tag_name:   tag,
+              name:       '🔥 Hotfix ' + tag + ' — ' + prTitle,
+              body:       releaseBody,
+              draft:      false,
+              prerelease: false,
+            };
+
+            if (existingReleaseId) {
+              const { data } = await github.rest.repos.updateRelease({
+                ...payload,
+                release_id: existingReleaseId,
+              });
+              release = data;
+            } else {
+              const { data } = await github.rest.repos.createRelease(payload);
+              release = data;
+            }
+
+            const actionLabel = existingReleaseId ? '🔄 MISE À JOUR' : '✅ CRÉÉE';
+
+            const commentBody = [
+              '## 🔥 HOTFIX RELEASE ' + actionLabel + ' — `' + tag + '`',
+              '',
+              '| Champ | Valeur |',
+              '|---|---|',
+              '| **Tag** | `' + tag + '` |',
+              '| **Version** | `' + version + '` |',
+              '| **Source version** | ' + sourceLabel + ' |',
+              '| **Action** | ' + actionLabel + ' |',
+              '| **Type** | 🔥 PATCH (hotfix production) |',
+              '| **Release** | [🔗 Voir la release](' + release.html_url + ') |',
+              '| **Description** | HOTFIX version — ' + prTitle + ' |',
+              '',
+              '> ⚡ Correctif d\'urgence **déployé en production** avec succès.',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: commentBody,
+            });
