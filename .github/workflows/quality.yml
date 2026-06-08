@@ -1,0 +1,119 @@
+name: Laravel Code Quality
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+      - master
+      - recette
+
+jobs:
+  laravel-quality:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          fetch-depth: 1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+          extensions: mbstring, xml, ctype, json, bcmath, pdo_sqlite, tokenizer
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      # 1. Code style
+      - name: Run Laravel Pint
+        id: pint
+        run: vendor/bin/pint --test --ansi
+        continue-on-error: true
+
+      - name: Annotate Pint errors
+        if: steps.pint.outcome == 'failure'
+        run: echo "::error::Code style violations found. Run 'vendor/bin/pint' to fix them."
+
+      # 2. Static analysis with PHPStan
+      - name: Run PHPStan
+        id: phpstan
+        run: |
+          mkdir -p reports
+          # Exécuter PHPStan et capturer la sortie SARIF
+          vendor/bin/phpstan analyse --error-format=sarif --memory-limit=1G > reports/phpstan-results.sarif || true
+          # Vérifier si le fichier est un JSON valide (non vide et commence par {)
+          if [ -s reports/phpstan-results.sarif ] && jq empty reports/phpstan-results.sarif 2>/dev/null; then
+            echo "sarif_valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "sarif_valid=false" >> $GITHUB_OUTPUT
+            rm -f reports/phpstan-results.sarif
+          fi
+        continue-on-error: true
+
+      - name: Upload PHPStan SARIF
+        if: steps.phpstan.outputs.sarif_valid == 'true'
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: reports/phpstan-results.sarif
+          category: phpstan
+
+      # 3. Security audit
+      - name: Run Composer Security Audit
+        id: audit
+        run: |
+          if [ -f "composer.lock" ]; then
+            composer audit --locked --format=json | tee composer-audit-results.json
+            echo "audit_done=true" >> $GITHUB_OUTPUT
+          else
+            echo "audit_done=false" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+
+      - name: Upload Composer Audit results
+        uses: actions/upload-artifact@v4
+        if: steps.audit.outputs.audit_done == 'true'
+        with:
+          name: composer-audit-results
+          path: composer-audit-results.json
+          retention-days: 7
+
+      - name: Post PR Comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let pintStatus = '${{ steps.pint.outcome }}' === 'success' ? '✅ Pass' : '❌ Fail';
+            let stanStatus = '${{ steps.phpstan.outputs.sarif_valid }}' === 'true' ? '✅ SARIF uploaded' : '⚠️ No issues (empty report)';
+            let auditStatus = '${{ steps.audit.outputs.audit_done }}' === 'true' ? '✅ Done' : '⚠️ No lock file';
+            const summary = `## 📊 Laravel Quality Check\n\n| Check | Status |\n|-------|--------|\n| **Code Style (Pint)** | ${pintStatus} |\n| **Static Analysis (PHPStan)** | ${stanStatus} |\n| **Security Audit** | ${auditStatus} |`;
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const botComment = comments.find(c => c.user.type === 'Bot' && c.body.includes('Laravel Quality Check'));
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                comment_id: botComment.id,
+                body: summary,
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                body: summary,
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+            }

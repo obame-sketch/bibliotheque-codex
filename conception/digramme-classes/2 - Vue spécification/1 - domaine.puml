@@ -1,0 +1,113 @@
+@startuml
+title "Couche Domaine - Bibliothèque Numérique (DDD)"
+
+package "Domain" {
+
+  package "Livre" {
+    class Livre {
+      - id: Identifiant
+      - titre: String
+      - auteur: String
+      - isbn: String
+      - datePublication: Date
+    }
+    interface LivreRepositoryInterface {
+      + findById(id): Livre
+      + findAll(): List<Livre>
+      + search(keyword): List<Livre>
+      + save(livre): void
+      + delete(id): void
+    }
+  }
+
+  package "Exemplaire" {
+    enum StatutExemplaire {
+      DISPONIBLE
+      EMPRUNTE
+      PERDU
+    }
+    class Exemplaire {
+      - id: Identifiant
+      - codeBarre: String
+      - statut: StatutExemplaire
+      + emprunter(): void
+      + retourner(): void
+      + estDisponible(): Boolean
+    }
+    interface ExemplaireRepositoryInterface {
+      + findById(id): Exemplaire
+      + findByLivre(livreId): List<Exemplaire>
+      + findDisponiblesByLivre(livreId): List<Exemplaire>
+      + save(exemplaire): void
+    }
+  }
+
+  package "Emprunt" {
+    enum StatutEmprunt {
+      EN_COURS
+      RENDU
+      EN_RETARD
+    }
+    class Emprunt {
+      - id: Identifiant
+      - dateEmprunt: Date
+      - dateRetourPrevue: Date
+      - dateRetourEffective: Date
+      - statut: StatutEmprunt
+      + cloturer(dateRetour): void
+      + estEnRetard(): Boolean
+    }
+    interface EmpruntRepositoryInterface {
+      + findById(id): Emprunt
+      + findEnCoursByLecteur(lecteurId): List<Emprunt>
+      + findAll(): List<Emprunt>
+      + save(emprunt): void
+    }
+  }
+
+  package "Lecteur" {
+    class Lecteur {
+      - id: Identifiant
+      - nom: String
+      - prenom: String
+      - email: String
+      - dateAdhesion: Date
+    }
+    interface LecteurRepositoryInterface {
+      + findById(id): Lecteur
+      + save(lecteur): void
+    }
+  }
+
+  package "Bibliothecaire" {
+    class Bibliothecaire {
+      - id: Identifiant
+      - nom: String
+      - prenom: String
+      - email: String
+    }
+    interface BibliothecaireRepositoryInterface {
+      + findById(id): Bibliothecaire
+      + save(bibliothecaire): void
+    }
+  }
+
+  package "Services Domaine" {
+    class ServiceDisponibilite {
+      + verifierDisponibilite(livreId): Boolean
+      + obtenirExemplaireDisponible(livreId): Exemplaire
+    }
+    class ServiceGestionEmprunt {
+      + enregistrerEmprunt(lecteur, exemplaire): Emprunt
+      + enregistrerRetour(emprunt): void
+      + calculerRetard(emprunt): int
+    }
+  }
+
+  ' Relations
+  Livre "1" -- "0..*" Exemplaire
+  Exemplaire "1" -- "0..*" Emprunt
+  Lecteur "1" -- "0..*" Emprunt
+  Bibliothecaire "1" -- "0..*" Livre
+}
+@enduml
