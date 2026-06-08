@@ -1,67 +1,118 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Conception du projet hotel
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Ce dossier contient l’ensemble des artefacts de conception du projet **hotel**.  
+La modélisation suit une architecture en couches (domaine, application, infrastructure) et trois niveaux de vues : conceptuelle, spécification et implémentation.
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Cas d’usage (`cas-usage`)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Ces diagrammes décrivent les interactions entre les acteurs (Visiteur, hôtelière) et le système.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Fichier | Description |
+|---------|-------------|
+| `1 - Diagramme cas d'utilisation Visiteur` | Parcours d’un Visiteur  |
+| `2 - Diagramme cas d'utilisation Structure hôtelière` | Structure hôtelière |
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Diagrammes de classes (`digramme-classes`)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Trois vues progressives (du conceptuel au code) et, pour chacune, une découpe par couches hexagonales/DDD.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 1 – Vue conceptuelle
 
-## Laravel Sponsors
+Modélisation métier de haut niveau, indépendante de toute technologie.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+| Fichier | Contenu |
+|---------|---------|
+| `1 - Diagramme conceptuel (classes métier)` | Entités principales et leurs relations (agrégats, value objects). |
+| `info.txt` | Notes et explications complémentaires sur la vue conceptuelle. |
 
-### Premium Partners
+### 2 – Vue spécification
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Détail des interfaces, contrats et dépendances entre les couches.
 
-## Contributing
+| Fichier | Rôle |
+|---------|------|
+| `1 - domaine.puml` | Spécification du cœur métier (entités, événements, règles). |
+| `2 - application.puml` | Services applicatifs, use cases, ports entrants. |
+| `3 - infrastructure.puml` | Ports sortants (repositories, services externes). |
+| `info.txt` | Précisions sur les choix d’architecture. |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3 – Vue implémentation
 
-## Code of Conduct
+Modèle proche du code réel (classes avec attributs, méthodes, types concrets).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Fichier | Description |
+|---------|-------------|
+| `1 - domaine.puml` | Implémentation des entités et value objects. |
+| `2 - application.puml` | Implémentation des services applicatifs. |
+| `3 - infrastructure.puml` | Détails techniques (ORM, API clients, etc.). |
+| `info.txt` | Indications sur les frameworks / bibliothèques utilisés. |
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Visualisation des diagrammes
 
-## License
+Les fichiers `.puml` sont au format **PlantUML**. Pour les visualiser :
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-# bibliotheque-codex
+- **En local** : installez PlantUML (ou l’extension VS Code) et générez les images.
+- **En ligne** : copiez le contenu sur [PlantUML Web Server](http://www.plantuml.com/plantuml/uml/).
+- **Sur GitHub** : utilisez un rendu avec `![](http://www.plantuml.com/plantuml/png/...` ou l’intégration via ````puml` (selon les extensions du dépôt).
+
+> 💡 *Conseil* : pour faciliter la lecture, vous pouvez générer une version PDF ou image de chaque diagramme et les stocker dans un sous-dossier `images/`.
+
+---
+
+## Évolution de la documentation
+
+Ce dossier de conception doit rester synchronisé avec le code.  
+À chaque modification architecturale majeure, mettez à jour les fichiers `.puml` correspondants et le fichier `info.txt` associé.
+
+
+
+# Intégration de la qualité du code (PHP / Laravel)
+
+Ce document vous guide pour intégrer des outils de contrôle qualité dans votre projet Laravel via GitHub Actions, en remplacement d’un outil comme Qodana.
+
+## 📦 Outils utilisés
+
+| Outil | Rôle |
+|-------|------|
+| **Laravel Pint** | Vérification et correction automatique du style de code (PSR-12 / conventions Laravel) |
+| **PHPStan / Larastan** | Analyse statique pour détecter les bugs potentiels, types manquants, erreurs logiques |
+| **Composer Audit** | Vérification des vulnérabilités dans les dépendances |
+| **PHP Insights** (optionnel) | Métriques de qualité, complexité, architecture |
+
+## ✅ Prérequis
+
+- Projet Laravel 13+
+- PHP 8.5+
+- Composer
+- Dépôt GitHub (public ou privé)
+
+## 🔧 Installation des outils
+
+Exécutez les commandes suivantes dans votre projet :
+
+```bash
+# Installer Laravel Pint (souvent déjà présent)
+composer require --dev laravel/pint
+
+# Installer Larastan (wrapper PHPStan pour Laravel)
+composer require --dev larastan/larastan
+
+# (Optionnel) PHP Insights
+composer require --dev nunomaduro/phpinsights
+```
+
+Créez un fichier phpstan.neon à la racine :
+```yml
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+    level: 5   # Niveau de rigueur (0=le plus faible, 9=le plus strict)
+```

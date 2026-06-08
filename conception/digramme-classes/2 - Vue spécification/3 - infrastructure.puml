@@ -1,0 +1,80 @@
+@startuml
+title "Vue spécification - Infrastructure (Bibliothèque Numérique)"
+
+package "Infrastructure" {
+
+  package "Persistence" {
+    interface LivreRepositoryInterface  <<from Domain>>
+    interface ExemplaireRepositoryInterface <<from Domain>>
+    interface EmpruntRepositoryInterface <<from Domain>>
+    interface LecteurRepositoryInterface <<from Domain>>
+    interface BibliothecaireRepositoryInterface <<from Domain>>
+
+    class LivreRepositoryConcret {
+      + findById(id: Identifiant): Livre
+      + findAll(): List<Livre>
+      + search(keyword: String): List<Livre>
+      + save(livre: Livre): void
+      + delete(id: Identifiant): void
+    }
+    class ExemplaireRepositoryConcret {
+      + findById(id: Identifiant): Exemplaire
+      + findByLivre(livreId: Identifiant): List<Exemplaire>
+      + findDisponiblesByLivre(livreId: Identifiant): List<Exemplaire>
+      + save(exemplaire: Exemplaire): void
+    }
+    class EmpruntRepositoryConcret {
+      + findById(id: Identifiant): Emprunt
+      + findEnCoursByLecteur(lecteurId: Identifiant): List<Emprunt>
+      + findAll(): List<Emprunt>
+      + save(emprunt: Emprunt): void
+    }
+    class LecteurRepositoryConcret {
+      + findById(id: Identifiant): Lecteur
+      + save(lecteur: Lecteur): void
+    }
+    class BibliothecaireRepositoryConcret {
+      + findById(id: Identifiant): Bibliothecaire
+      + save(bibliothecaire: Bibliothecaire): void
+    }
+    note bottom of LivreRepositoryConcret : Implémentation avec Eloquent (ou autre ORM)
+  }
+
+  package "Http/Controllers" {
+    class LecteurController {
+      + consulterCatalogue(request): Response
+      + rechercherLivre(request): Response
+      + emprunterLivre(request): Response
+      + retournerLivre(request): Response
+      + voirMesEmprunts(request): Response
+    }
+    class BibliothecaireController {
+      + ajouterLivre(request): Response
+      + modifierLivre(request): Response
+      + supprimerLivre(request): Response
+      + enregistrerEmprunt(request): Response
+      + enregistrerRetour(request): Response
+      + consulterTousEmprunts(request): Response
+    }
+  }
+
+  package "Providers" {
+    class BibliothequeServiceProvider {
+      + register(): void
+      + boot(): void
+    }
+    note top : Lie les interfaces de repository\naux implémentations concrètes.
+  }
+}
+
+' Relations
+LecteurController ..> EmprunterLivreUseCase
+LecteurController ..> RetournerLivreUseCase
+LecteurController ..> VoirMesEmpruntsUseCase
+BibliothecaireController ..> AjouterLivreUseCase
+BibliothecaireController ..> EnregistrerEmpruntUseCase
+
+LivreRepositoryConcret ..|> LivreRepositoryInterface
+ExemplaireRepositoryConcret ..|> ExemplaireRepositoryInterface
+EmpruntRepositoryConcret ..|> EmpruntRepositoryInterface
+@enduml

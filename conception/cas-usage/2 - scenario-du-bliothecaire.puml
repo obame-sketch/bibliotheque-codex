@@ -1,0 +1,25 @@
+@startuml
+title "Cas d'usages - Bibliothèque Numérique (Bibliothécaire)"
+left to right direction
+actor Bibliothecaire as librarian <<Utilisateur>>
+node "Système d'inventaire" as InventorySystem
+rectangle "Scenario d'un bibliothécaire" {
+  usecase "Ajouter un livre" as AddBookUsecase
+  usecase "Modifier un livre" as EditBookUsecase
+  usecase "Supprimer un livre" as DeleteBookUsecase
+  usecase "Enregistrer un emprunt" as RegisterLoanUsecase
+  usecase "Enregistrer un retour" as RegisterReturnUsecase
+  usecase "Consulter tous les emprunts" as ViewAllLoansUsecase
+  usecase "Vérifier disponibilité du livre" as CheckAvailabilityUsecase
+  librarian --> AddBookUsecase
+  librarian --> EditBookUsecase
+  librarian --> DeleteBookUsecase
+  librarian --> RegisterLoanUsecase
+  librarian --> RegisterReturnUsecase
+  librarian --> ViewAllLoansUsecase
+  RegisterLoanUsecase ..> CheckAvailabilityUsecase : <<include>>
+  CheckAvailabilityUsecase --> InventorySystem
+  RegisterReturnUsecase <.. CheckAvailabilityUsecase : <<extend>>
+}
+note bottom of CheckAvailabilityUsecase : Vérification auprès du système d'inventaire\ndisponibilité ou existence du livre.
+@enduml

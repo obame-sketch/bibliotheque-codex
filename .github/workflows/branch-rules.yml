@@ -1,0 +1,203 @@
+# =============================================================================
+# 🔒 VALIDATION DES RÈGLES DE MERGE
+# =============================================================================
+# Fichier  : .github/workflows/branch-rules.yml
+# Rôle     : Bloquer tout merge qui ne respecte pas le workflow défini
+# Workflow :
+#   feature/* | fix/* | doc/*  →  recette
+#   recette                    →  develop
+#   develop                    →  main
+#   hotfix/*                   →  main
+# =============================================================================
+
+name: 🔒 Validation des règles de merge
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  pull-requests: write
+  statuses:      write
+
+# ---------------------------------------------------------------------------
+jobs:
+  # ---------------------------------------------------------------------------
+
+  # ── 1. Vérification du flux de branches ──────────────────────────────────
+  validate-merge-flow:
+    name: 🔍 Vérification du flux de branches
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── Contrôle de direction ──────────────────────────────────────────
+      - name: Vérifier la direction du merge
+        id: check_flow
+        run: |
+          SOURCE="${{ github.head_ref }}"
+          TARGET="${{ github.base_ref }}"
+          VALID=false
+          LABEL=""
+
+          echo "::notice::Source  → $SOURCE"
+          echo "::notice::Cible   → $TARGET"
+
+          # ── Règle 1 : feature/* | fix/* | doc/*  →  recette ───────────
+          if [[ "$SOURCE" =~ ^(feature|fix|doc)/ && "$TARGET" == "recette" ]]; then
+            VALID=true
+            LABEL="✅ \`$SOURCE\` → \`recette\` autorisé"
+          fi
+
+          # ── Règle 2 : recette → develop ───────────────────────────────
+          if [[ "$SOURCE" == "recette" && "$TARGET" == "develop" ]]; then
+            VALID=true
+            LABEL="✅ \`recette\` → \`develop\` autorisé"
+          fi
+
+          # ── Règle 3 : develop → main ──────────────────────────────────
+          if [[ "$SOURCE" == "develop" && "$TARGET" == "main" ]]; then
+            VALID=true
+            LABEL="✅ \`develop\` → \`main\` autorisé"
+          fi
+
+          # ── Règle 4 : hotfix/* → main ─────────────────────────────────
+          if [[ "$SOURCE" =~ ^hotfix/ && "$TARGET" == "main" ]]; then
+            VALID=true
+            LABEL="✅ \`$SOURCE\` → \`main\` (hotfix) autorisé"
+          fi
+
+          # ── Rapport dans le Summary ────────────────────────────────────
+          {
+            echo "## 🔒 Validation du flux de merge"
+            echo ""
+            echo "| Champ   | Valeur |"
+            echo "|---------|--------|"
+            echo "| **Source** | \`$SOURCE\` |"
+            echo "| **Cible**  | \`$TARGET\` |"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$VALID" = true ]; then
+            echo "$LABEL" >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "### ❌ Merge bloqué"
+              echo ""
+              echo "Le merge de \`$SOURCE\` → \`$TARGET\` **n'est pas autorisé**."
+              echo ""
+              echo "#### Flux de merge autorisés :"
+              echo ""
+              echo "| Source                        | Cible     |"
+              echo "|-------------------------------|-----------|"
+              echo "| \`feature/*\` / \`fix/*\` / \`doc/*\` | \`recette\` |"
+              echo "| \`recette\`                     | \`develop\` |"
+              echo "| \`develop\`                     | \`main\`    |"
+              echo "| \`hotfix/*\`                    | \`main\`    |"
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            echo "::error file=.github/workflows/branch-rules.yml::❌ Merge invalide : \`$SOURCE\` → \`$TARGET\` n'est pas autorisé. Consultez le workflow officiel."
+            exit 1
+          fi
+
+      # ── Convention de commit (titre PR) ───────────────────────────────
+      - name: Vérifier la convention du titre de la PR
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+
+          {
+            echo ""
+            echo "## 📝 Convention du titre de PR"
+            echo ""
+            echo "**Titre :** \`$TITLE\`"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Conventional Commits : type(scope)?: description
+          PATTERN="^(feat|fix|docs|refactor|test|chore|hotfix|style|perf|ci|build|revert)(\(.+\))?: .+"
+
+          if echo "$TITLE" | grep -qE "$PATTERN"; then
+            echo "✅ Convention Conventional Commits respectée." >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "⚠️ **Avertissement** : le titre ne suit pas la convention."
+              echo ""
+              echo "**Format attendu :** \`type: description\` ou \`type(scope): description\`"
+              echo ""
+              echo "| Type        | Usage |"
+              echo "|-------------|-------|"
+              echo "| \`feat\`       | Nouvelle fonctionnalité |"
+              echo "| \`fix\`        | Correction de bug |"
+              echo "| \`docs\`       | Documentation |"
+              echo "| \`refactor\`   | Refactoring |"
+              echo "| \`test\`       | Tests |"
+              echo "| \`chore\`      | Maintenance |"
+              echo "| \`hotfix\`     | Correctif urgent |"
+              echo "| \`perf\`       | Performance |"
+              echo "| \`ci\`         | CI/CD |"
+              echo ""
+              echo "**Exemples :**"
+              echo "\`\`\`"
+              echo "feat: ajout API utilisateur"
+              echo "fix(auth): correction bug pagination"
+              echo "docs: ajout documentation swagger"
+              echo "\`\`\`"
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            echo "::warning::Le titre de la PR ne suit pas la convention Conventional Commits. Format : type: description"
+            # ⚠️ Warning seulement — non bloquant (retirez le '#' ci-dessous pour bloquer)
+            # exit 1
+          fi
+
+      # ── Vérification du nom de branche source ─────────────────────────
+      - name: Vérifier la convention du nom de branche
+        run: |
+          SOURCE="${{ github.head_ref }}"
+
+          BRANCH_PATTERN="^(feature|fix|doc|hotfix|refactor|test|chore)/.+"
+
+          {
+            echo ""
+            echo "## 🌿 Convention du nom de branche"
+            echo ""
+            echo "**Branche :** \`$SOURCE\`"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if echo "$SOURCE" | grep -qE "$BRANCH_PATTERN"; then
+            echo "✅ Convention de nommage de branche respectée." >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "⚠️ **Avertissement** : la branche ne suit pas la convention."
+              echo ""
+              echo "**Format attendu :** \`type/description-courte\` ou \`type/123-description\`"
+              echo ""
+              echo "**Exemples :**"
+              echo "- \`feature/login-oauth\`"
+              echo "- \`feature/42-api-utilisateur\`"
+              echo "- \`fix/bug-pagination\`"
+              echo "- \`doc/swagger-auth\`"
+              echo "- \`hotfix/correction-paiement\`"
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            echo "::warning::La branche \`$SOURCE\` ne suit pas la convention de nommage."
+            # ⚠️ Warning seulement — non bloquant
+            # exit 1
+          fi
+
+  # ── 2. Vérification de la cible des hotfix ────────────────────────────────
+  validate-hotfix:
+    name: 🔥 Vérifier les hotfix
+    runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'hotfix/')
+
+    steps:
+      - name: Un hotfix ne peut cibler que main
+        run: |
+          TARGET="${{ github.base_ref }}"
+
+          if [ "$TARGET" != "main" ]; then
+            echo "::error::❌ Un hotfix ne peut être mergé que vers \`main\`, pas vers \`$TARGET\`."
+            exit 1
+          fi
+
+          echo "✅ Hotfix valide : cible \`main\` confirmée."
