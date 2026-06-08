@@ -1,0 +1,136 @@
+@startuml
+title "Implémentation - Infrastructure (PHP/Laravel) - Bibliothèque Numérique"
+
+namespace App\Infrastructure\Http\Controllers {
+  class LecteurController extends Controller {
+    - ConsulterCatalogueUseCase $consulterCatalogueUseCase
+    - RechercherLivreUseCase $rechercherLivreUseCase
+    - EmprunterLivreUseCase $emprunterLivreUseCase
+    - RetournerLivreUseCase $retournerLivreUseCase
+    - VoirMesEmpruntsUseCase $voirMesEmpruntsUseCase
+    + __construct(...)
+    + consulterCatalogue(Request $request): JsonResponse
+    + rechercherLivre(Request $request): JsonResponse
+    + emprunterLivre(Request $request): JsonResponse
+    + retournerLivre(Request $request): JsonResponse
+    + voirMesEmprunts(Request $request): JsonResponse
+  }
+  class BibliothecaireController extends Controller {
+    - AjouterLivreUseCase $ajouterLivreUseCase
+    - ModifierLivreUseCase $modifierLivreUseCase
+    - SupprimerLivreUseCase $supprimerLivreUseCase
+    - EnregistrerEmpruntUseCase $enregistrerEmpruntUseCase
+    - EnregistrerRetourUseCase $enregistrerRetourUseCase
+    - ConsulterTousEmpruntsUseCase $consulterTousEmpruntsUseCase
+    + __construct(...)
+    + ajouterLivre(Request $request): JsonResponse
+    + modifierLivre(Request $request, string $id): JsonResponse
+    + supprimerLivre(string $id): JsonResponse
+    + enregistrerEmprunt(Request $request): JsonResponse
+    + enregistrerRetour(Request $request): JsonResponse
+    + consulterTousEmprunts(): JsonResponse
+  }
+}
+
+namespace App\Infrastructure\Persistence\Eloquent\Models {
+  class LivreModel extends Model {
+    - string $table = "livres"
+    - bool $incrementing = false
+    - string $keyType = "string"
+    - array $fillable = ["id","titre","auteur","isbn","date_publication"]
+    - array $casts = ["id" => "string", "date_publication" => "date"]
+    + exemplaires(): HasMany
+  }
+  class ExemplaireModel extends Model {
+    - string $table = "exemplaires"
+    - bool $incrementing = false
+    - string $keyType = "string"
+    - array $fillable = ["id","livre_id","code_barre","statut"]
+    - array $casts = ["id" => "string", "statut" => StatutExemplaireEnum::class]
+    + livre(): BelongsTo
+    + emprunts(): HasMany
+  }
+  class EmpruntModel extends Model {
+    - string $table = "emprunts"
+    - bool $incrementing = false
+    - string $keyType = "string"
+    - array $fillable = ["id","lecteur_id","exemplaire_id","date_emprunt","date_retour_prevue","date_retour_effective","statut"]
+    - array $casts = ["id" => "string", "date_emprunt" => "datetime", "date_retour_prevue" => "datetime", "date_retour_effective" => "datetime", "statut" => StatutEmpruntEnum::class]
+    + lecteur(): BelongsTo
+    + exemplaire(): BelongsTo
+  }
+  class LecteurModel extends Model {
+    - string $table = "lecteurs"
+    - bool $incrementing = false
+    - string $keyType = "string"
+    - array $fillable = ["id","nom","prenom","email","date_adhesion"]
+    - array $casts = ["id" => "string", "date_adhesion" => "date"]
+    + emprunts(): HasMany
+  }
+  class BibliothecaireModel extends Model {
+    - string $table = "bibliothecaires"
+    - bool $incrementing = false
+    - string $keyType = "string"
+    - array $fillable = ["id","nom","prenom","email"]
+    - array $casts = ["id" => "string"]
+  }
+}
+
+namespace App\Infrastructure\Persistence\Repository {
+  class LivreRepository implements LivreRepositoryInterface {
+    - LivreModel $model
+    + __construct(LivreModel $model)
+    + findById(string $id): ?Livre
+    + findAll(): array
+    + search(string $keyword): array
+    + save(Livre $livre): void
+    + delete(string $id): void
+    - toDomain(LivreModel $model): Livre
+    - toModel(Livre $livre): LivreModel
+  }
+  class ExemplaireRepository implements ExemplaireRepositoryInterface {
+    - ExemplaireModel $model
+    + __construct(ExemplaireModel $model)
+    + findById(string $id): ?Exemplaire
+    + findByLivre(string $livreId): array
+    + findDisponiblesByLivre(string $livreId): array
+    + save(Exemplaire $exemplaire): void
+  }
+  class EmpruntRepository implements EmpruntRepositoryInterface {
+    - EmpruntModel $model
+    + __construct(EmpruntModel $model)
+    + findById(string $id): ?Emprunt
+    + findEnCoursByLecteur(string $lecteurId): array
+    + findAll(): array
+    + save(Emprunt $emprunt): void
+  }
+  class LecteurRepository implements LecteurRepositoryInterface {
+    - LecteurModel $model
+    + __construct(LecteurModel $model)
+    + findById(string $id): ?Lecteur
+    + save(Lecteur $lecteur): void
+  }
+  class BibliothecaireRepository implements BibliothecaireRepositoryInterface {
+    - BibliothecaireModel $model
+    + __construct(BibliothecaireModel $model)
+    + findById(string $id): ?Bibliothecaire
+    + save(Bibliothecaire $bibliothecaire): void
+  }
+}
+
+namespace App\Infrastructure\Providers {
+  class BibliothequeServiceProvider extends ServiceProvider {
+    + register(): void
+    + boot(): void
+  }
+  note top : Bindings :\nLivreRepositoryInterface → LivreRepository\nExemplaireRepositoryInterface → ExemplaireRepository\n...
+}
+
+' Relations entre classes d'infrastructure
+LecteurController ..> EmprunterLivreUseCase
+BibliothecaireController ..> AjouterLivreUseCase
+LivreRepository ..|> LivreRepositoryInterface
+LivreRepository --> LivreModel
+ExemplaireRepository --> ExemplaireModel
+EmpruntRepository --> EmpruntModel
+@enduml
