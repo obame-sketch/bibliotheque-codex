@@ -61,7 +61,7 @@ final class Bibliothecaire
 
     private function guardEmail(string $email): void
     {
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('L\'adresse e-mail fournie est invalide.');
         }
     }

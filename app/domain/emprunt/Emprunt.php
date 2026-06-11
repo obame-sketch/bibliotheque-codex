@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Emprunt;
 
-use App\Domain\Lecteur\Lecteur;
 use App\Domain\Exemplaire\Exemplaire;
+use App\Domain\Lecteur\Lecteur;
 
 final class Emprunt
 {
     private ?\DateTimeImmutable $dateRetourEffective;
+
     private StatutEmprunt $statut;
 
     public function __construct(
@@ -88,16 +89,17 @@ final class Emprunt
             return $this->dateRetourEffective > $this->dateRetourPrevue;
         }
 
-        return new \DateTimeImmutable() > $this->dateRetourPrevue;
+        return new \DateTimeImmutable > $this->dateRetourPrevue;
     }
 
     public function joursDeRetard(): int
     {
-        if (!$this->estEnRetard()) {
+        if (! $this->estEnRetard()) {
             return 0;
         }
 
-        $reference = $this->dateRetourEffective ?? new \DateTimeImmutable();
+        $reference = $this->dateRetourEffective ?? new \DateTimeImmutable;
+
         return (int) $this->dateRetourPrevue->diff($reference)->days;
     }
 }

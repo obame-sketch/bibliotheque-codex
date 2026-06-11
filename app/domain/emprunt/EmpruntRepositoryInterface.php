@@ -10,7 +10,9 @@ interface EmpruntRepositoryInterface
 
     public function findEnCoursByLecteur(string $lecteurId): array;
 
-    public function findByExemplaireId(string $exemplaireId): array;
+    public function findAll(): array;
 
     public function save(Emprunt $emprunt): void;
+
+    public function findByExemplaireId(string $exemplaireId): array;
 }

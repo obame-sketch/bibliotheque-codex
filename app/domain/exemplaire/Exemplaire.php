@@ -31,7 +31,7 @@ final class Exemplaire
 
     public function emprunter(): void
     {
-        if (!$this->estDisponible()) {
+        if (! $this->estDisponible()) {
             throw new \DomainException('Cet exemplaire n\'est pas disponible pour un emprunt.');
         }
 

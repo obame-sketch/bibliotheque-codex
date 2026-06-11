@@ -11,22 +11,17 @@ final class ServiceDisponibilite
 {
     public function __construct(
         private readonly ExemplaireRepositoryInterface $exemplaireRepository,
-    ) {
-    }
+    ) {}
 
     public function verifierDisponibilite(string $livreId): bool
     {
-        return count($this->exemplaireRepository->findDisponiblesByLivreId($livreId)) > 0;
+        return count($this->exemplaireRepository->findDisponiblesByLivre($livreId)) > 0;
     }
 
-    public function obtenirExemplaireDisponible(string $livreId): Exemplaire
+    public function obtenirExemplaireDisponible(string $livreId): ?Exemplaire
     {
-        $exemplaires = $this->exemplaireRepository->findDisponiblesByLivreId($livreId);
+        $exemplaires = $this->exemplaireRepository->findDisponiblesByLivre($livreId);
 
-        if (empty($exemplaires)) {
-            throw new \DomainException('Aucun exemplaire disponible pour ce livre.');
-        }
-
-        return $exemplaires[0];
+        return $exemplaires[0] ?? null;
     }
 }

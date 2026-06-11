@@ -45,7 +45,7 @@ final class Livre
 
     public function estPublie(): bool
     {
-        return $this->datePublication <= new \DateTimeImmutable();
+        return $this->datePublication <= new \DateTimeImmutable;
     }
 
     public function mettreAJourTitre(string $titre): void

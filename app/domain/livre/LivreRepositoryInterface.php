@@ -8,7 +8,13 @@ interface LivreRepositoryInterface
 {
     public function findById(string $id): ?Livre;
 
-    public function findByIsbn(string $isbn): ?Livre;
+    public function findAll(): array;
+
+    public function search(string $keyword): array;
 
     public function save(Livre $livre): void;
+
+    public function delete(string $id): void;
+
+    public function findByIsbn(string $isbn): ?Livre;
 }

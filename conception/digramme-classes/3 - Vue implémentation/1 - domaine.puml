@@ -1,6 +1,7 @@
 @startuml
 title "Implémentation - Domaine (PHP/Laravel) - Bibliothèque Numérique"
 
+' Domaine principal des livres
 namespace App\Domain\Livre {
   class Livre {
     - string $id
@@ -17,6 +18,7 @@ namespace App\Domain\Livre {
     + setTitre(string $titre): void
     + setAuteur(string $auteur): void
   }
+  ' Interface de persistence pour Livre
   interface LivreRepositoryInterface {
     + findById(string $id): ?Livre
     + findAll(): array
@@ -26,6 +28,7 @@ namespace App\Domain\Livre {
   }
 }
 
+' Domaine des exemplaires physiques ou numériques
 namespace App\Domain\Exemplaire {
   enum StatutExemplaire {
     DISPONIBLE
@@ -44,6 +47,7 @@ namespace App\Domain\Exemplaire {
     + retourner(): void
     + estDisponible(): bool
   }
+  ' Interface de persistence pour Exemplaire
   interface ExemplaireRepositoryInterface {
     + findById(string $id): ?Exemplaire
     + findByLivre(string $livreId): array
@@ -52,6 +56,7 @@ namespace App\Domain\Exemplaire {
   }
 }
 
+' Domaine des emprunts et de leur cycle de vie
 namespace App\Domain\Emprunt {
   enum StatutEmprunt {
     EN_COURS
@@ -73,6 +78,7 @@ namespace App\Domain\Emprunt {
     + cloturer(DateTime $dateRetour): void
     + estEnRetard(): bool
   }
+  ' Interface de persistence pour Emprunt
   interface EmpruntRepositoryInterface {
     + findById(string $id): ?Emprunt
     + findEnCoursByLecteur(string $lecteurId): array
@@ -81,6 +87,7 @@ namespace App\Domain\Emprunt {
   }
 }
 
+' Domaine des lecteurs de la bibliothèque
 namespace App\Domain\Lecteur {
   class Lecteur {
     - string $id
@@ -95,12 +102,14 @@ namespace App\Domain\Lecteur {
     + getEmail(): string
     + getDateAdhesion(): DateTime
   }
+  ' Interface de persistence pour Lecteur
   interface LecteurRepositoryInterface {
     + findById(string $id): ?Lecteur
     + save(Lecteur $lecteur): void
   }
 }
 
+' Domaine des bibliothécaires et de leur gestion
 namespace App\Domain\Bibliothecaire {
   class Bibliothecaire {
     - string $id
@@ -113,12 +122,14 @@ namespace App\Domain\Bibliothecaire {
     + getPrenom(): string
     + getEmail(): string
   }
+  ' Interface de persistence pour Bibliothecaire
   interface BibliothecaireRepositoryInterface {
     + findById(string $id): ?Bibliothecaire
     + save(Bibliothecaire $bibliothecaire): void
   }
 }
 
+' Services de domaine qui orchestrent la disponibilité et l'emprunt
 namespace App\Domain\Services {
   class ServiceDisponibilite {
     + verifierDisponibilite(string $livreId): bool

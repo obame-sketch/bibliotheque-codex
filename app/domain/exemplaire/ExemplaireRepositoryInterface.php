@@ -8,9 +8,9 @@ interface ExemplaireRepositoryInterface
 {
     public function findById(string $id): ?Exemplaire;
 
-    public function findDisponiblesByLivreId(string $livreId): array;
+    public function findByLivre(string $livreId): array;
 
-    public function findByLivreId(string $livreId): array;
+    public function findDisponiblesByLivre(string $livreId): array;
 
     public function save(Exemplaire $exemplaire): void;
 }

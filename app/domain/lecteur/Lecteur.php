@@ -45,7 +45,7 @@ final class Lecteur
 
     public function estAdherentActif(): bool
     {
-        return $this->dateAdhesion <= new \DateTimeImmutable();
+        return $this->dateAdhesion <= new \DateTimeImmutable;
     }
 
     public function changerEmail(string $email): void
@@ -72,7 +72,7 @@ final class Lecteur
 
     private function guardEmail(string $email): void
     {
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('L\'adresse e-mail fournie est invalide.');
         }
     }
