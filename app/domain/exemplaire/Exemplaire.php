@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Exemplaire;
 
+/**
+ * Entité représentant un exemplaire physique ou numérique d'un livre.
+ *
+ * Un exemplaire possède un identifiant, un code-barres et un statut. Cette
+ * classe fournit les opérations métier sur un exemplaire : emprunter,
+ * retourner et vérifier la disponibilité.
+ */
 final class Exemplaire
 {
     public function __construct(
@@ -29,6 +36,13 @@ final class Exemplaire
         return $this->statut;
     }
 
+    /**
+     * Marque l'exemplaire comme emprunté.
+     *
+     * Lève une DomainException si l'exemplaire n'est pas disponible.
+     *
+     * @throws \DomainException
+     */
     public function emprunter(): void
     {
         if (! $this->estDisponible()) {
@@ -38,6 +52,13 @@ final class Exemplaire
         $this->statut = StatutExemplaire::EMPRUNTE;
     }
 
+    /**
+     * Retourne l'exemplaire et le marque comme disponible.
+     *
+     * Lève une DomainException si l'exemplaire est marqué perdu.
+     *
+     * @throws \DomainException
+     */
     public function retourner(): void
     {
         if ($this->statut === StatutExemplaire::PERDU) {
@@ -52,6 +73,14 @@ final class Exemplaire
         return $this->statut === StatutExemplaire::DISPONIBLE;
     }
 
+    /**
+     * Valide qu'un champ texte n'est pas vide.
+     *
+     * @param  string  $valeur  Valeur à valider
+     * @param  string  $champ  Nom du champ (pour le message d'erreur)
+     *
+     * @throws \InvalidArgumentException
+     */
     private function guardNonVide(string $valeur, string $champ): void
     {
         if ($valeur === '') {

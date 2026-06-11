@@ -12,7 +12,9 @@ use PHPUnit\Framework\TestCase;
 class EmpruntTest extends TestCase
 {
     private Emprunt $emprunt;
+
     private Lecteur $lecteur;
+
     private Exemplaire $exemplaire;
 
     protected function setUp(): void
@@ -33,7 +35,7 @@ class EmpruntTest extends TestCase
             StatutExemplaire::DISPONIBLE
         );
 
-        $now = new \DateTimeImmutable();
+        $now = new \DateTimeImmutable;
         $this->emprunt = new Emprunt(
             id: '1',
             lecteur: $this->lecteur,
@@ -55,7 +57,7 @@ class EmpruntTest extends TestCase
     public function test_date_retour_prevue_doit_etre_posterieure_a_date_emprunt(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $now = new \DateTimeImmutable();
+        $now = new \DateTimeImmutable;
         new Emprunt(
             '1',
             $this->lecteur,

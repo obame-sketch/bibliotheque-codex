@@ -27,7 +27,7 @@ class ExemplaireTest extends TestCase
         $this->assertEquals(StatutExemplaire::DISPONIBLE, $this->exemplaire->statut());
     }
 
-    public function test_codeBarre_ne_peut_pas_etre_vide(): void
+    public function test_code_barre_ne_peut_pas_etre_vide(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         new Exemplaire('1', '', StatutExemplaire::DISPONIBLE);

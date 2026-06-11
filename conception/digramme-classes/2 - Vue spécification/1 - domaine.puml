@@ -17,6 +17,7 @@ package "Domain" {
       + search(keyword): List<Livre>
       + save(livre): void
       + delete(id): void
+      + findByIsbn(isbn): Livre
     }
   }
 

@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 class ServiceDisponibiliteTest extends TestCase
 {
     private ServiceDisponibilite $service;
+
     private MockObject|ExemplaireRepositoryInterface $exemplaireRepository;
 
     protected function setUp(): void

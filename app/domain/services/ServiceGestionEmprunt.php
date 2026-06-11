@@ -10,6 +10,15 @@ use App\Domain\Exemplaire\Exemplaire;
 use App\Domain\Exemplaire\ExemplaireRepositoryInterface;
 use App\Domain\Lecteur\Lecteur;
 
+/**
+ * Service de domaine responsable de l'enregistrement des emprunts et retours.
+ *
+ * Cette classe orchestre les interactions entre les repositories et les
+ * entités (exemplaire, emprunt) pour :
+ * - enregistrer un emprunt (marquer l'exemplaire comme emprunté et créer l'emprunt)
+ * - enregistrer un retour (clôturer l'emprunt et remettre l'exemplaire disponible)
+ * - calculer le retard d'un emprunt
+ */
 final class ServiceGestionEmprunt
 {
     public function __construct(
@@ -17,6 +26,16 @@ final class ServiceGestionEmprunt
         private readonly ExemplaireRepositoryInterface $exemplaireRepository,
     ) {}
 
+    /**
+     * Enregistre un nouvel emprunt pour un lecteur et un exemplaire donnés.
+     *
+     * Cette méthode marque l'exemplaire comme emprunté, persiste l'exemplaire,
+     * crée l'entité Emprunt et la sauvegarde via le repository.
+     *
+     * @param  Lecteur  $lecteur  Lecteur effectuant l'emprunt
+     * @param  Exemplaire  $exemplaire  Exemplaire emprunté
+     * @return Emprunt L'entité Emprunt créée
+     */
     public function enregistrerEmprunt(Lecteur $lecteur, Exemplaire $exemplaire): Emprunt
     {
         $exemplaire->emprunter();
@@ -38,6 +57,11 @@ final class ServiceGestionEmprunt
         return $emprunt;
     }
 
+    /**
+     * Enregistre le retour d'un emprunt : clôture l'emprunt et met l'exemplaire disponible.
+     *
+     * @param  Emprunt  $emprunt  Emprunt à clôturer
+     */
     public function enregistrerRetour(Emprunt $emprunt): void
     {
         $emprunt->cloturer(new \DateTimeImmutable);
@@ -47,6 +71,12 @@ final class ServiceGestionEmprunt
         $this->empruntRepository->save($emprunt);
     }
 
+    /**
+     * Calcule le retard (en jours) pour l'emprunt donné.
+     *
+     * @param  Emprunt  $emprunt  Emprunt à évaluer
+     * @return int Nombre de jours de retard
+     */
     public function calculerRetard(Emprunt $emprunt): int
     {
         return $emprunt->joursDeRetard();

@@ -9,14 +9,15 @@ namespace App\Domain\Livre {
     - string $auteur
     - string $isbn
     - DateTime $datePublication
-    + __construct(string $titre, string $auteur, string $isbn, DateTime $datePublication)
-    + getId(): string
-    + getTitre(): string
-    + getAuteur(): string
-    + getIsbn(): string
-    + getDatePublication(): DateTime
-    + setTitre(string $titre): void
-    + setAuteur(string $auteur): void
+    + __construct(string $id, string $titre, string $auteur, string $isbn, DateTime $datePublication)
+    + id(): string
+    + titre(): string
+    + auteur(): string
+    + isbn(): string
+    + datePublication(): DateTime
+    + mettreAJourTitre(string $titre): void
+    + changerAuteur(string $auteur): void
+    + changerIsbn(string $isbn): void
   }
   ' Interface de persistence pour Livre
   interface LivreRepositoryInterface {
@@ -25,6 +26,7 @@ namespace App\Domain\Livre {
     + search(string $keyword): array
     + save(Livre $livre): void
     + delete(string $id): void
+    + findByIsbn(string $isbn): ?Livre
   }
 }
 

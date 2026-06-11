@@ -32,19 +32,19 @@ class LecteurTest extends TestCase
     public function test_nom_ne_peut_pas_etre_vide(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        new Lecteur('1', '', 'Jean', 'email@test.com', new \DateTimeImmutable());
+        new Lecteur('1', '', 'Jean', 'email@test.com', new \DateTimeImmutable);
     }
 
     public function test_prenom_ne_peut_pas_etre_vide(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        new Lecteur('1', 'Dupont', '', 'email@test.com', new \DateTimeImmutable());
+        new Lecteur('1', 'Dupont', '', 'email@test.com', new \DateTimeImmutable);
     }
 
     public function test_email_invalide_leve_exception(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        new Lecteur('1', 'Dupont', 'Jean', 'email-invalide', new \DateTimeImmutable());
+        new Lecteur('1', 'Dupont', 'Jean', 'email-invalide', new \DateTimeImmutable);
     }
 
     public function test_changer_email_valide(): void

@@ -15,9 +15,13 @@ use PHPUnit\Framework\TestCase;
 class ServiceGestionEmpruntTest extends TestCase
 {
     private ServiceGestionEmprunt $service;
+
     private MockObject|EmpruntRepositoryInterface $empruntRepository;
+
     private MockObject|ExemplaireRepositoryInterface $exemplaireRepository;
+
     private Lecteur $lecteur;
+
     private Exemplaire $exemplaire;
 
     protected function setUp(): void
@@ -45,8 +49,6 @@ class ServiceGestionEmpruntTest extends TestCase
 
     public function test_enregistrer_emprunt_change_statut_exemplaire(): void
     {
-        $this->exemplaire->emprunter();
-        
         $this->exemplaireRepository
             ->expects($this->once())
             ->method('save')
@@ -61,11 +63,12 @@ class ServiceGestionEmpruntTest extends TestCase
         $this->assertInstanceOf(Emprunt::class, $emprunt);
         $this->assertEquals($this->lecteur, $emprunt->lecteur());
         $this->assertEquals($this->exemplaire, $emprunt->exemplaire());
+        $this->assertEquals(StatutExemplaire::EMPRUNTE, $this->exemplaire->statut());
     }
 
     public function test_enregistrer_retour_clot_emprunt(): void
     {
-        $now = new \DateTimeImmutable();
+        $now = new \DateTimeImmutable;
         $emprunt = new Emprunt(
             '1',
             $this->lecteur,
