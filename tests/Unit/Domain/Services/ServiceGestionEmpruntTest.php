@@ -61,8 +61,8 @@ class ServiceGestionEmpruntTest extends TestCase
         $emprunt = $this->service->enregistrerEmprunt($this->lecteur, $this->exemplaire);
 
         $this->assertInstanceOf(Emprunt::class, $emprunt);
-        $this->assertEquals($this->lecteur, $emprunt->lecteur());
-        $this->assertEquals($this->exemplaire, $emprunt->exemplaire());
+        $this->assertEquals($this->lecteur, $emprunt->getLecteur()); // Already using getLecteur(), but `exemplaire()` below needs fixing.
+        $this->assertEquals($this->exemplaire, $emprunt->getExemplaire());
         $this->assertEquals(StatutExemplaire::EMPRUNTE, $this->exemplaire->statut());
     }
 
@@ -89,7 +89,7 @@ class ServiceGestionEmpruntTest extends TestCase
 
         $this->service->enregistrerRetour($emprunt);
 
-        $this->assertEquals(StatutExemplaire::DISPONIBLE, $emprunt->exemplaire()->statut());
+        $this->assertEquals(StatutExemplaire::DISPONIBLE, $emprunt->getExemplaire()->statut());
     }
 
     public function test_calculer_retard(): void

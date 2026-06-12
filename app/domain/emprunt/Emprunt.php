@@ -42,7 +42,7 @@ final class Emprunt
      *
      * @return string Identifiant
      */
-    public function id(): string
+    public function getId(): string
     {
         return $this->id;
     }
@@ -52,7 +52,7 @@ final class Emprunt
      *
      * @return Lecteur Instance du lecteur
      */
-    public function lecteur(): Lecteur
+    public function getLecteur(): Lecteur
     {
         return $this->lecteur;
     }
@@ -62,7 +62,7 @@ final class Emprunt
      *
      * @return Exemplaire Instance de l'exemplaire
      */
-    public function exemplaire(): Exemplaire
+    public function getExemplaire(): Exemplaire
     {
         return $this->exemplaire;
     }

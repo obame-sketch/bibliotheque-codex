@@ -65,9 +65,9 @@ final class ServiceGestionEmprunt
     public function enregistrerRetour(Emprunt $emprunt): void
     {
         $emprunt->cloturer(new \DateTimeImmutable);
-        $emprunt->exemplaire()->retourner();
+        $emprunt->getExemplaire()->retourner();
 
-        $this->exemplaireRepository->save($emprunt->exemplaire());
+        $this->exemplaireRepository->save($emprunt->getExemplaire());
         $this->empruntRepository->save($emprunt);
     }
 

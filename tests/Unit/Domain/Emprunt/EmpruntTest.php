@@ -47,9 +47,9 @@ class EmpruntTest extends TestCase
 
     public function test_emprunt_creation(): void
     {
-        $this->assertEquals('1', $this->emprunt->id());
-        $this->assertEquals($this->lecteur, $this->emprunt->lecteur());
-        $this->assertEquals($this->exemplaire, $this->emprunt->exemplaire());
+        $this->assertEquals('1', $this->emprunt->getId());
+        $this->assertEquals($this->lecteur, $this->emprunt->getLecteur());
+        $this->assertEquals($this->exemplaire, $this->emprunt->getExemplaire());
         $this->assertEquals(StatutEmprunt::EN_COURS, $this->emprunt->statut());
         $this->assertNull($this->emprunt->dateRetourEffective());
     }
