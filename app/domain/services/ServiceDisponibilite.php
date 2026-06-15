@@ -15,8 +15,8 @@ use App\Domain\Exemplaire\ExemplaireRepositoryInterface;
  */
 final class ServiceDisponibilite
 {
-
     private ExemplaireRepositoryInterface $exemplaireRepository;
+
     public function __construct(ExemplaireRepositoryInterface $exemplaireRepository)
     {
         $this->exemplaireRepository = $exemplaireRepository;
@@ -31,15 +31,17 @@ final class ServiceDisponibilite
     public function verifierDisponibilite(string $livreId): bool
     {
         $exemplaires = $this->exemplaireRepository->findDisponiblesByLivre($livreId);
-        if(isset($exemplaires) && is_array($exemplaires) && count($exemplaires) > 0){
-            $exemplairesDisponibles = array();
+        if (isset($exemplaires) && is_array($exemplaires) && count($exemplaires) > 0) {
+            $exemplairesDisponibles = [];
             foreach ($exemplaires as $value) {
-                if($value->estDisponible()){
+                if ($value->estDisponible()) {
                     array_push($exemplairesDisponibles, $value);
                 }
             }
+
             return count($exemplairesDisponibles) > 0;
         }
+
         return false;
     }
 
@@ -52,15 +54,17 @@ final class ServiceDisponibilite
     public function obtenirExemplaireDisponible(string $livreId): ?Exemplaire
     {
         $exemplaires = $this->exemplaireRepository->findDisponiblesByLivre($livreId);
-        if(isset($exemplaires) && is_array($exemplaires) && count($exemplaires) > 0){
-            $exemplairesDisponibles = array();
+        if (isset($exemplaires) && is_array($exemplaires) && count($exemplaires) > 0) {
+            $exemplairesDisponibles = [];
             foreach ($exemplaires as $value) {
-                if($value->estDisponible()){
+                if ($value->estDisponible()) {
                     array_push($exemplairesDisponibles, $value);
                 }
             }
+
             return $exemplairesDisponibles[0] ?? null;
         }
+
         return null;
     }
 }

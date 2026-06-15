@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 class ServiceDisponibiliteTest extends TestCase
 {
     private ExemplaireRepositoryInterface $repository;
+
     private ServiceDisponibilite $service;
 
     protected function setUp(): void
@@ -23,7 +24,7 @@ class ServiceDisponibiliteTest extends TestCase
 
     // ========== TESTS POUR verifierDisponibilite ==========
 
-    public function testVerifierDisponibiliteRetourneFalseSiAucunExemplaireTrouve(): void
+    public function test_verifier_disponibilite_retourne_false_si_aucun_exemplaire_trouve(): void
     {
         $livreId = 'livre-1';
         $this->repository
@@ -36,7 +37,7 @@ class ServiceDisponibiliteTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function testVerifierDisponibiliteRetourneFalseSiTableauVide(): void
+    public function test_verifier_disponibilite_retourne_false_si_tableau_vide(): void
     {
         $livreId = 'livre-1';
         $this->repository
@@ -49,7 +50,7 @@ class ServiceDisponibiliteTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function testVerifierDisponibiliteRetourneFalseSiAucunExemplaireDisponible(): void
+    public function test_verifier_disponibilite_retourne_false_si_aucun_exemplaire_disponible(): void
     {
         $livreId = 'livre-1';
         $exemplaireNonDispo = $this->creerExemplaire(false);
@@ -63,7 +64,7 @@ class ServiceDisponibiliteTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function testVerifierDisponibiliteRetourneTrueSiAuMoinsUnExemplaireDisponible(): void
+    public function test_verifier_disponibilite_retourne_true_si_au_moins_un_exemplaire_disponible(): void
     {
         $livreId = 'livre-1';
         $exemplaireDispo = $this->creerExemplaire(true);
@@ -77,7 +78,7 @@ class ServiceDisponibiliteTest extends TestCase
         $this->assertTrue($result);
     }
 
-    public function testVerifierDisponibiliteIgnoreExemplairesNonDisponibles(): void
+    public function test_verifier_disponibilite_ignore_exemplaires_non_disponibles(): void
     {
         $livreId = 'livre-1';
         $dispo = $this->creerExemplaire(true);
@@ -95,7 +96,7 @@ class ServiceDisponibiliteTest extends TestCase
 
     // ========== TESTS POUR obtenirExemplaireDisponible ==========
 
-    public function testObtenirExemplaireDisponibleRetourneNullSiAucunExemplaireTrouve(): void
+    public function test_obtenir_exemplaire_disponible_retourne_null_si_aucun_exemplaire_trouve(): void
     {
         $livreId = 'livre-1';
         $this->repository
@@ -108,7 +109,7 @@ class ServiceDisponibiliteTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function testObtenirExemplaireDisponibleRetourneNullSiTableauVide(): void
+    public function test_obtenir_exemplaire_disponible_retourne_null_si_tableau_vide(): void
     {
         $livreId = 'livre-1';
         $this->repository
@@ -121,7 +122,7 @@ class ServiceDisponibiliteTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function testObtenirExemplaireDisponibleRetourneNullSiAucunDisponible(): void
+    public function test_obtenir_exemplaire_disponible_retourne_null_si_aucun_disponible(): void
     {
         $livreId = 'livre-1';
         $exemplaireNonDispo = $this->creerExemplaire(false);
@@ -135,7 +136,7 @@ class ServiceDisponibiliteTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function testObtenirExemplaireDisponibleRetourneLePremierExemplaireDisponible(): void
+    public function test_obtenir_exemplaire_disponible_retourne_le_premier_exemplaire_disponible(): void
     {
         $livreId = 'livre-1';
         $dispo1 = $this->creerExemplaire(true);
@@ -150,7 +151,7 @@ class ServiceDisponibiliteTest extends TestCase
         $this->assertSame($dispo1, $result);
     }
 
-    public function testObtenirExemplaireDisponibleIgnoreLesNonDisponiblesEtPrendLePremierDisponible(): void
+    public function test_obtenir_exemplaire_disponible_ignore_les_non_disponibles_et_prend_le_premier_disponible(): void
     {
         $livreId = 'livre-1';
         $nonDispo = $this->creerExemplaire(false);
@@ -172,9 +173,10 @@ class ServiceDisponibiliteTest extends TestCase
         $statut = $disponible ? StatutExemplaire::DISPONIBLE : StatutExemplaire::EMPRUNTE;
         // Génération d'un ID et d'un code-barre uniques pour éviter les interférences
         $uniqueId = uniqid();
+
         return new Exemplaire(
             id: $uniqueId,
-            codeBarre: 'CODE-' . $uniqueId,
+            codeBarre: 'CODE-'.$uniqueId,
             statut: $statut
         );
     }
