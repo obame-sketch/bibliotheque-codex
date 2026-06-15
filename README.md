@@ -1,6 +1,5 @@
-# Conception du projet hotel
-
-Ce dossier contient l’ensemble des artefacts de conception du projet **hotel**.  
+# Conception du bibliotheque numerique
+Ce dossier contient l’ensemble des artefacts de conception du projet **bibliotheque numerique**.  
 La modélisation suit une architecture en couches (domaine, application, infrastructure) et trois niveaux de vues : conceptuelle, spécification et implémentation.
 
 
@@ -8,10 +7,10 @@ La modélisation suit une architecture en couches (domaine, application, infrast
 
 Ces diagrammes décrivent les interactions entre les acteurs (Visiteur, hôtelière) et le système.
 
-| Fichier | Description |
-|---------|-------------|
-| `1 - Diagramme cas d'utilisation Visiteur` | Parcours d’un Visiteur  |
-| `2 - Diagramme cas d'utilisation Structure hôtelière` | Structure hôtelière |
+| Fichier                          | Description                |
+|----------------------------------|----------------------------|
+| `1 - scenario du lecteur`        | cas d'usage d'un lecteur   |
+| `2 - scenario du bibliothecaire` | cas d'usage bibliothecaire |
 
 ---
 
