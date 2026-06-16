@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\DTO\Livre;
+namespace App\Application\Bibliothecaire\DTO;
 
 /**
  * DTO contenant les modifications d'un livre (tous les champs sont optionnels).

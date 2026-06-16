@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\DTO\Livre;
+namespace App\Application\Bibliothecaire\DTO;
 
 /**
  * DTO pour encapsuler les informations nécessaires à la création d'un livre.

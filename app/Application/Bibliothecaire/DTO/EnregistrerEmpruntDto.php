@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\DTO\Emprunt;
+namespace App\Application\Bibliothecaire\DTO;
 
 /**
  * DTO pour associer un lecteur à un exemplaire précis lors d'un emprunt.
