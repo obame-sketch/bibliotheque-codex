@@ -14,5 +14,3 @@ final readonly class EnregistrerEmpruntDto
         public string $exemplaireId,
     ) {}
 }
-
-?>

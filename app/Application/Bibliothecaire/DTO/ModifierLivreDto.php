@@ -20,5 +20,3 @@ final readonly class ModifierLivreDto
         public ?\DateTimeImmutable $datePublication = null,
     ) {}
 }
-
-?>

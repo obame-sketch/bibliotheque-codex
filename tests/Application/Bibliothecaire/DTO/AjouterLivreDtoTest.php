@@ -40,12 +40,12 @@ describe('AjouterLivreDto', function () {
             titre: 'Titre',
             auteur: 'Auteur',
             isbn: '1234567890',
-            datePublication: new DateTimeImmutable(),
+            datePublication: new DateTimeImmutable,
             nombreExemplaires: 1
         );
 
         // On capture l'erreur sans tester le message exact (car il contient le nom complet)
-        expect(fn() => $dto->titre = 'Nouveau titre')
+        expect(fn () => $dto->titre = 'Nouveau titre')
             ->toThrow(Error::class);
     });
 

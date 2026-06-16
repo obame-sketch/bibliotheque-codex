@@ -31,7 +31,7 @@ describe('EnregistrerEmpruntDto', function () {
             exemplaireId: 'exemplaire-1'
         );
 
-        expect(fn() => $dto->lecteurId = 'nouvel-id')
+        expect(fn () => $dto->lecteurId = 'nouvel-id')
             ->toThrow(Error::class);
     });
 

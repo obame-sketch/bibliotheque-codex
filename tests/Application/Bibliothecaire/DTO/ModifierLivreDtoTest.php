@@ -52,7 +52,7 @@ describe('ModifierLivreDto', function () {
     });
 
     it('est créé sans paramètres (tout null)', function () {
-        $dto = new ModifierLivreDto();
+        $dto = new ModifierLivreDto;
 
         expect($dto->titre)->toBeNull()
             ->and($dto->auteur)->toBeNull()
@@ -65,10 +65,10 @@ describe('ModifierLivreDto', function () {
             titre: 'Titre',
             auteur: 'Auteur',
             isbn: '1234567890',
-            datePublication: new DateTimeImmutable()
+            datePublication: new DateTimeImmutable
         );
 
-        expect(fn() => $dto->titre = 'Nouveau titre')
+        expect(fn () => $dto->titre = 'Nouveau titre')
             ->toThrow(Error::class);
     });
 
