@@ -1,3 +1,0 @@
-Vue spécification :
-Elle se concentre sur les interfaces, les types et les responsabilités des classes.
-Elle montre comment le logiciel est utilisé de l'extérieur.

@@ -1,2 +1,0 @@
-Vue implémentation :
-Elle est la plus précise et montre les détails de code (visibilité, types de données, méthodes spécifiques)

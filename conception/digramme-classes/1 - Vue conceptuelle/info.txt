@@ -1,3 +1,0 @@
-Vue conceptuelle :
-Elle représente les concepts du domaine métier sans se soucier de l'implémentation technique
-(souvent utilisée lors des phases de recueil des besoins).
