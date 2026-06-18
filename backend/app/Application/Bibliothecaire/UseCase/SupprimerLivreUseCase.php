@@ -21,7 +21,7 @@ final class SupprimerLivreUseCase
     /**
      * Supprime un livre après vérification de l'absence d'exemplaires disponibles.
      *
-     * @param string $livreId Identifiant du livre à supprimer
+     * @param  string  $livreId  Identifiant du livre à supprimer
      */
     public function execute(string $livreId): void
     {

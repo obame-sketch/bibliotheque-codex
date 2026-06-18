@@ -16,6 +16,7 @@ use App\Domain\Livre\Livre;
 final class Exemplaire
 {
     private Livre $livre;
+
     public function __construct(
         private readonly string $id,
         private string $codeBarre,

@@ -7,6 +7,7 @@ namespace App\Tests\Domain\Services;
 use App\Domain\Exemplaire\Exemplaire;
 use App\Domain\Exemplaire\ExemplaireRepositoryInterface;
 use App\Domain\Exemplaire\StatutExemplaire;
+use App\Domain\Livre\Livre;
 use App\Domain\Services\ServiceDisponibilite;
 use PHPUnit\Framework\TestCase;
 
@@ -175,17 +176,18 @@ class ServiceDisponibiliteTest extends TestCase
         $uniqueId = uniqid();
 
         $exemplaire = new Exemplaire(
-                id: $uniqueId,
-                codeBarre: 'CODE-'.$uniqueId,
-                statut: $statut
-            );
-        $exemplaire->setLivre(new \App\Domain\Livre\Livre(
+            id: $uniqueId,
+            codeBarre: 'CODE-'.$uniqueId,
+            statut: $statut
+        );
+        $exemplaire->setLivre(new Livre(
             id: 'livre-1',
             titre: 'Titre de Test',
             auteur: 'Auteur de Test',
             isbn: 'ISBN-TEST',
             datePublication: new \DateTimeImmutable('2020-01-01')
         ));
+
         return $exemplaire;
     }
 }

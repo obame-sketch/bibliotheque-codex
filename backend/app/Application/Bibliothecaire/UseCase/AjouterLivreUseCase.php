@@ -6,10 +6,10 @@ namespace App\Application\Bibliothecaire\UseCase;
 
 use App\Application\Bibliothecaire\DTO\AjouterLivreDto;
 use App\Domain\Exemplaire\Exemplaire;
+use App\Domain\Exemplaire\ExemplaireRepositoryInterface;
 use App\Domain\Exemplaire\StatutExemplaire;
 use App\Domain\Livre\Livre;
 use App\Domain\Livre\LivreRepositoryInterface;
-use App\Domain\Exemplaire\ExemplaireRepositoryInterface;
 
 /**
  * Cas d'utilisation pour l'ajout d'un nouveau livre et de ses exemplaires.
@@ -24,7 +24,7 @@ final class AjouterLivreUseCase
     /**
      * Exécute l'ajout d'un livre et crée le nombre d'exemplaires demandés.
      *
-     * @param AjouterLivreDto $dto Données nécessaires à la création du livre
+     * @param  AjouterLivreDto  $dto  Données nécessaires à la création du livre
      */
     public function execute(AjouterLivreDto $dto): Livre
     {

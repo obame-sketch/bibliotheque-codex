@@ -19,8 +19,8 @@ final class ModifierLivreUseCase
     /**
      * Met à jour les champs non nuls du livre spécifié.
      *
-     * @param string $livreId Identifiant du livre à modifier
-     * @param ModifierLivreDto $dto Données de modification du livre
+     * @param  string  $livreId  Identifiant du livre à modifier
+     * @param  ModifierLivreDto  $dto  Données de modification du livre
      */
     public function execute(string $livreId, ModifierLivreDto $dto): void
     {

@@ -6,7 +6,6 @@ namespace App\Application\Bibliothecaire\UseCase;
 
 use App\Application\Bibliothecaire\DTO\EnregistrerEmpruntDto;
 use App\Domain\Emprunt\Emprunt;
-use App\Domain\Emprunt\EmpruntRepositoryInterface;
 use App\Domain\Exemplaire\ExemplaireRepositoryInterface;
 use App\Domain\Lecteur\LecteurRepositoryInterface;
 use App\Domain\Services\ServiceGestionEmprunt;
@@ -25,7 +24,7 @@ final class EnregistrerEmpruntUseCase
     /**
      * Enregistre un emprunt en vérifiant le lecteur et l'exemplaire.
      *
-     * @param EnregistrerEmpruntDto $dto Données de l'emprunt à enregistrer
+     * @param  EnregistrerEmpruntDto  $dto  Données de l'emprunt à enregistrer
      */
     public function execute(EnregistrerEmpruntDto $dto): Emprunt
     {

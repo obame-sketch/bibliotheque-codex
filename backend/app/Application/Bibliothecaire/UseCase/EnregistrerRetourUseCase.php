@@ -20,7 +20,7 @@ final class EnregistrerRetourUseCase
     /**
      * Traite le retour d'un emprunt et met à jour son statut.
      *
-     * @param string $empruntId Identifiant de l'emprunt retourné
+     * @param  string  $empruntId  Identifiant de l'emprunt retourné
      */
     public function execute(string $empruntId): void
     {

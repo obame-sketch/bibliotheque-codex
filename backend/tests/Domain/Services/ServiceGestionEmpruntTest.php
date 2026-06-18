@@ -8,6 +8,7 @@ use App\Domain\Exemplaire\Exemplaire;
 use App\Domain\Exemplaire\ExemplaireRepositoryInterface;
 use App\Domain\Exemplaire\StatutExemplaire;
 use App\Domain\Lecteur\Lecteur;
+use App\Domain\Livre\Livre;
 use App\Domain\Services\ServiceGestionEmprunt;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -45,7 +46,7 @@ class ServiceGestionEmpruntTest extends TestCase
             'CODE-001',
             StatutExemplaire::DISPONIBLE
         );
-        $this->exemplaire->setLivre(new \App\Domain\Livre\Livre(
+        $this->exemplaire->setLivre(new Livre(
             id: 'livre-1',
             titre: 'Titre de Test',
             auteur: 'Auteur de Test',
