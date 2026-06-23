@@ -44,6 +44,8 @@ interface LivreRepositoryInterface
      */
     public function search(string $keyword): array;
 
+    public function rechercher(string $keyword): array;
+
     /**
      * Sauvegarde un livre en base de données
      *

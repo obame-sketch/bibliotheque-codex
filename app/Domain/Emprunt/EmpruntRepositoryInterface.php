@@ -14,6 +14,8 @@ interface EmpruntRepositoryInterface
 {
     public function findById(string $id): ?Emprunt;
 
+    public function findByLecteurId(string $lecteurId): array;
+
     public function findEnCoursByLecteur(string $lecteurId): array;
 
     public function findAll(): array;

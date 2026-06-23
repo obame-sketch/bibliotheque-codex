@@ -57,6 +57,12 @@ final class ServiceGestionEmprunt
         return $emprunt;
     }
 
+    public function emprunter(Lecteur $lecteur, string $livreId): Emprunt
+    {
+        $exemplaire = $this->exemplaireRepository->findDisponiblesByLivre($livreId)[0] ?? null;
+        return $this->enregistrerEmprunt($lecteur, $exemplaire);
+    }
+
     /**
      * Enregistre le retour d'un emprunt : clôture l'emprunt et met l'exemplaire disponible.
      *
@@ -69,6 +75,12 @@ final class ServiceGestionEmprunt
 
         $this->exemplaireRepository->save($emprunt->getExemplaire());
         $this->empruntRepository->save($emprunt);
+    }
+
+    public function retourner(Emprunt $emprunt): void
+    {
+        $emprunt->cloturer(new \DateTimeImmutable);
+        $emprunt->getExemplaire()->retourner();
     }
 
     /**

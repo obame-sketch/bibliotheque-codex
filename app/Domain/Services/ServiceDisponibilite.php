@@ -45,6 +45,11 @@ final class ServiceDisponibilite
         return false;
     }
 
+    public function verifier(string $livreId): bool
+    {
+        return $this->verifierDisponibilite($livreId);
+    }
+
     /**
      * Retourne un exemplaire disponible pour le livre donné, ou null si aucun.
      *
