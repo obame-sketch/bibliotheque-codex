@@ -14,13 +14,11 @@ interface EmpruntRepositoryInterface
 {
     public function findById(string $id): ?Emprunt;
 
-    public function findByLecteurId(string $lecteurId): array;
-
     public function findEnCoursByLecteur(string $lecteurId): array;
 
     public function findAll(): array;
 
-    public function save(Emprunt $emprunt): void;
+    public function save(Emprunt $emprunt): ?Emprunt;
 
     public function findByExemplaireId(string $exemplaireId): array;
 }

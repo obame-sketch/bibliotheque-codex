@@ -8,7 +8,7 @@ use App\Domain\Livre\LivreRepositoryInterface;
 
 /**
  * Cas d'utilisation pour rechercher un livre dans le catalogue.
- * 
+ *
  * Permet à un lecteur de rechercher des livres par mot-clé.
  */
 final readonly class RechercherLivreUseCase
@@ -33,6 +33,6 @@ final readonly class RechercherLivreUseCase
             return [];
         }
 
-        return $this->livreRepository->rechercher($cleanKeyword);
+        return $this->livreRepository->search($cleanKeyword);
     }
 }

@@ -28,6 +28,6 @@ final readonly class VoirMesEmpruntsUseCase
      */
     public function execute(string $lecteurId): array
     {
-        return $this->empruntRepository->findByLecteurId($lecteurId);
+        return $this->empruntRepository->findEnCoursByLecteur($lecteurId);
     }
 }

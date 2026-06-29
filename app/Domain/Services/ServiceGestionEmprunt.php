@@ -39,7 +39,7 @@ final class ServiceGestionEmprunt
     public function enregistrerEmprunt(Lecteur $lecteur, Exemplaire $exemplaire): Emprunt
     {
         $exemplaire->emprunter();
-        $this->exemplaireRepository->save($exemplaire);
+        $exemplaireSauvegarder = $this->exemplaireRepository->save($exemplaire);
 
         $dateEmprunt = new \DateTimeImmutable;
         $dateRetourPrevue = $dateEmprunt->modify('+21 days');
@@ -47,14 +47,14 @@ final class ServiceGestionEmprunt
         $emprunt = new Emprunt(
             id: uniqid('', true),
             lecteur: $lecteur,
-            exemplaire: $exemplaire,
+            exemplaire: $exemplaireSauvegarder,
             dateEmprunt: $dateEmprunt,
             dateRetourPrevue: $dateRetourPrevue,
         );
 
-        $this->empruntRepository->save($emprunt);
+        $empruntSauvegarder = $this->empruntRepository->save($emprunt);
 
-        return $emprunt;
+        return $empruntSauvegarder;
     }
 
     public function emprunter(Lecteur $lecteur, string $livreId): Emprunt

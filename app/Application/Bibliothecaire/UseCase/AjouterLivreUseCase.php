@@ -28,7 +28,6 @@ final class AjouterLivreUseCase
      */
     public function execute(AjouterLivreDto $dto): Livre
     {
-        // Étape 1 : Créer une nouvelle instance de Livre avec un ID unique
         $livre = new Livre(
             id: uniqid('', true),
             titre: $dto->titre,
@@ -36,23 +35,16 @@ final class AjouterLivreUseCase
             isbn: $dto->isbn,
             datePublication: $dto->datePublication,
         );
-
-        // Étape 2 : Persister le livre en base de données
-        $this->livreRepository->save($livre);
-
-        // Étape 3 : Créer et persister tous les exemplaires demandés
-        // Chaque exemplaire est lié au livre via livreId et dispose d'un code-barre unique
+        $livreSauvegarder =$this->livreRepository->save($livre);
         for ($index = 0; $index < $dto->nombreExemplaires; $index++) {
             $exemplaire = new Exemplaire(
                 id: uniqid('', true),
-                codeBarre: sprintf('%s-%s', $livre->id(), $index + 1),
+                codeBarre: sprintf('%s-%s', $livreSauvegarder->id(), $index + 1),
                 statut: StatutExemplaire::DISPONIBLE,
             );
             $exemplaire->setLivre($livre);
             $this->exemplaireRepository->save($exemplaire);
         }
-
-        // Retourner le livre créé
         return $livre;
     }
 }

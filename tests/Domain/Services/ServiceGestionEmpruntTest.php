@@ -1,6 +1,8 @@
 <?php
 
-namespace Tests\Domain\Services;
+declare(strict_types=1);
+
+namespace App\Tests\Domain\Services;
 
 use App\Domain\Emprunt\Emprunt;
 use App\Domain\Emprunt\EmpruntRepositoryInterface;
@@ -11,107 +13,96 @@ use App\Domain\Lecteur\Lecteur;
 use App\Domain\Livre\Livre;
 use App\Domain\Services\ServiceGestionEmprunt;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
-class ServiceGestionEmpruntTest extends TestCase
-{
-    private ServiceGestionEmprunt $service;
-
-    private MockObject|EmpruntRepositoryInterface $empruntRepository;
-
-    private MockObject|ExemplaireRepositoryInterface $exemplaireRepository;
-
-    private Lecteur $lecteur;
-
-    private Exemplaire $exemplaire;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->empruntRepository = $this->createMock(EmpruntRepositoryInterface::class);
-        $this->exemplaireRepository = $this->createMock(ExemplaireRepositoryInterface::class);
-        $this->service = new ServiceGestionEmprunt($this->empruntRepository, $this->exemplaireRepository);
-
-        $this->lecteur = new Lecteur(
-            '1',
-            'Dupont',
-            'Jean',
-            'jean@example.com',
-            new \DateTimeImmutable('2024-01-01')
-        );
-
-        $this->exemplaire = new Exemplaire(
-            '1',
-            'CODE-001',
-            StatutExemplaire::DISPONIBLE
-        );
-        $this->exemplaire->setLivre(new Livre(
-            id: 'livre-1',
-            titre: 'Titre de Test',
-            auteur: 'Auteur de Test',
-            isbn: 'ISBN-TEST',
-            datePublication: new \DateTimeImmutable('2020-01-01')
-        ));
-    }
-
-    public function test_enregistrer_emprunt_change_statut_exemplaire(): void
-    {
+beforeEach(function () {
+    $this->empruntRepository = mock(EmpruntRepositoryInterface::class);
+    $this->exemplaireRepository = mock(ExemplaireRepositoryInterface::class);
+    $this->service = new ServiceGestionEmprunt(
+        $this->empruntRepository,
         $this->exemplaireRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($this->exemplaire);
+    );
 
-        $this->empruntRepository
-            ->expects($this->once())
-            ->method('save');
+    $this->lecteur = new Lecteur(
+        '1',
+        'Dupont',
+        'Jean',
+        'jean@example.com',
+        new DateTimeImmutable('2024-01-01')
+    );
 
-        $emprunt = $this->service->enregistrerEmprunt($this->lecteur, $this->exemplaire);
+    $this->exemplaire = new Exemplaire(
+        '1',
+        'CODE-001',
+        StatutExemplaire::DISPONIBLE
+    );
+    $this->exemplaire->setLivre(new Livre(
+        id: 'livre-1',
+        titre: 'Titre de Test',
+        auteur: 'Auteur de Test',
+        isbn: 'ISBN-TEST',
+        datePublication: new DateTimeImmutable('2020-01-01')
+    ));
+});
 
-        $this->assertInstanceOf(Emprunt::class, $emprunt);
-        $this->assertEquals($this->lecteur, $emprunt->getLecteur()); // Already using getLecteur(), but `exemplaire()` below needs fixing.
-        $this->assertEquals($this->exemplaire, $emprunt->getExemplaire());
-        $this->assertEquals(StatutExemplaire::EMPRUNTE, $this->exemplaire->statut());
-    }
+it('change le statut de l\'exemplaire lors de l\'enregistrement d\'un emprunt', function () {
+    $this->exemplaireRepository
+        ->shouldReceive('save')
+        ->once()
+        ->with($this->exemplaire)
+        ->andReturn($this->exemplaire);
 
-    public function test_enregistrer_retour_clot_emprunt(): void
-    {
-        $now = new \DateTimeImmutable;
-        $emprunt = new Emprunt(
-            '1',
-            $this->lecteur,
-            $this->exemplaire,
-            $now,
-            $now->modify('+21 days')
-        );
+    $this->empruntRepository
+        ->shouldReceive('save')
+        ->once()
+        ->andReturnUsing(function (Emprunt $emprunt) {
+            return $emprunt;
+        });
 
-        $this->exemplaireRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($this->exemplaire);
+    $emprunt = $this->service->enregistrerEmprunt($this->lecteur, $this->exemplaire);
 
-        $this->empruntRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($emprunt);
+    expect($emprunt)->toBeInstanceOf(Emprunt::class)
+        ->and($emprunt->getLecteur())->toBe($this->lecteur)
+        ->and($emprunt->getExemplaire())->toBe($this->exemplaire)
+        ->and($this->exemplaire->statut())->toBe(StatutExemplaire::EMPRUNTE);
+});
 
-        $this->service->enregistrerRetour($emprunt);
+it('clôture l\'emprunt et remet l\'exemplaire disponible lors du retour', function () {
+    $now = new DateTimeImmutable;
+    $emprunt = new Emprunt(
+        '1',
+        $this->lecteur,
+        $this->exemplaire,
+        $now,
+        $now->modify('+21 days')
+    );
 
-        $this->assertEquals(StatutExemplaire::DISPONIBLE, $emprunt->getExemplaire()->statut());
-    }
+    $this->exemplaireRepository
+        ->shouldReceive('save')
+        ->once()
+        ->with($this->exemplaire)
+        ->andReturn($this->exemplaire);
 
-    public function test_calculer_retard(): void
-    {
-        $empruntAvecRetard = new Emprunt(
-            '1',
-            $this->lecteur,
-            $this->exemplaire,
-            new \DateTimeImmutable('2024-01-01'),
-            new \DateTimeImmutable('2024-01-10')
-        );
+    $this->empruntRepository
+        ->shouldReceive('save')
+        ->once()
+        ->with($emprunt)
+        ->andReturn($emprunt);
 
-        $retard = $this->service->calculerRetard($empruntAvecRetard);
+    $this->service->enregistrerRetour($emprunt);
 
-        $this->assertGreaterThan(0, $retard);
-    }
-}
+    expect($emprunt->getExemplaire()->statut())->toBe(StatutExemplaire::DISPONIBLE);
+});
+
+it('calcule le nombre de jours de retard', function () {
+    $empruntAvecRetard = new Emprunt(
+        '1',
+        $this->lecteur,
+        $this->exemplaire,
+        new DateTimeImmutable('2024-01-01'),
+        new DateTimeImmutable('2024-01-10')
+    );
+
+    $retard = $this->service->calculerRetard($empruntAvecRetard);
+
+    expect($retard)->toBeGreaterThan(0);
+});

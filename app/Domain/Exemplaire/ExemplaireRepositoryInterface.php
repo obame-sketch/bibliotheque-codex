@@ -18,5 +18,5 @@ interface ExemplaireRepositoryInterface
 
     public function findDisponiblesByLivre(string $livreId): array;
 
-    public function save(Exemplaire $exemplaire): void;
+    public function save(Exemplaire $exemplaire): ?Exemplaire;
 }
