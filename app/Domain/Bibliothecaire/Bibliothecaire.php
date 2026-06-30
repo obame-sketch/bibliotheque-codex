@@ -15,10 +15,10 @@ namespace App\Domain\Bibliothecaire;
 final class Bibliothecaire
 {
     public function __construct(
-        private readonly string $id,
         private string $nom,
         private string $prenom,
         private string $email,
+        private ?string $id = null,
     ) {
         $this->guardNonVide($nom, 'nom');
         $this->guardNonVide($prenom, 'prenom');

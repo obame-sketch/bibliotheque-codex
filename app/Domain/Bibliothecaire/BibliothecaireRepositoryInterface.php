@@ -15,5 +15,5 @@ interface BibliothecaireRepositoryInterface
 {
     public function findById(string $id): ?Bibliothecaire;
 
-    public function save(Bibliothecaire $bibliothecaire): void;
+    public function save(Bibliothecaire $bibliothecaire): ?Bibliothecaire;
 }

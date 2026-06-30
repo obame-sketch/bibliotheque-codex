@@ -52,7 +52,7 @@ interface LivreRepositoryInterface
      *
      * @param  Livre  $livre  L'instance du livre à sauvegarder
      */
-    public function save(Livre $livre): void;
+    public function save(Livre $livre): ?Livre;
 
     /**
      * Supprime un livre de la bibliothèque

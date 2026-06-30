@@ -28,22 +28,14 @@ final class EnregistrerEmpruntUseCase
      */
     public function execute(EnregistrerEmpruntDto $dto): Emprunt
     {
-        // Étape 1 : Vérifier que le lecteur existe
         $lecteur = $this->lecteurRepository->findById($dto->lecteurId);
-
         if ($lecteur === null) {
             throw new \RuntimeException(sprintf('Lecteur introuvable pour l\'ID %s.', $dto->lecteurId));
         }
-
-        // Étape 2 : Vérifier que l'exemplaire existe
         $exemplaire = $this->exemplaireRepository->findById($dto->exemplaireId);
-
         if ($exemplaire === null) {
             throw new \RuntimeException(sprintf('Exemplaire introuvable pour l\'ID %s.', $dto->exemplaireId));
         }
-
-        // Étape 3 : Enregistrer l'emprunt en utilisant le service de gestion
-        // Le service gère le changement de statut de l'exemplaire et crée l'enregistrement d'emprunt
         return $this->serviceGestionEmprunt->enregistrerEmprunt($lecteur, $exemplaire);
     }
 }

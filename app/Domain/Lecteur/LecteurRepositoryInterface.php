@@ -15,5 +15,5 @@ interface LecteurRepositoryInterface
 {
     public function findById(string $id): ?Lecteur;
 
-    public function save(Lecteur $lecteur): void;
+    public function save(Lecteur $lecteur): ?Lecteur;
 }

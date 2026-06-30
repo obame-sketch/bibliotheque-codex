@@ -22,7 +22,6 @@ final class ConsulterTousEmpruntsUseCase
      */
     public function execute(): array
     {
-        // Récupérer et retourner tous les emprunts enregistrés dans la bibliothèque
         return $this->empruntRepository->findAll();
     }
 }

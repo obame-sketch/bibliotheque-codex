@@ -19,7 +19,7 @@ use App\Domain\Lecteur\Lecteur;
  * - enregistrer un retour (clôturer l'emprunt et remettre l'exemplaire disponible)
  * - calculer le retard d'un emprunt
  */
-final class ServiceGestionEmprunt
+class ServiceGestionEmprunt
 {
     public function __construct(
         private readonly EmpruntRepositoryInterface $empruntRepository,
@@ -39,22 +39,28 @@ final class ServiceGestionEmprunt
     public function enregistrerEmprunt(Lecteur $lecteur, Exemplaire $exemplaire): Emprunt
     {
         $exemplaire->emprunter();
-        $this->exemplaireRepository->save($exemplaire);
+        $exemplaireSauvegarder = $this->exemplaireRepository->save($exemplaire);
 
         $dateEmprunt = new \DateTimeImmutable;
         $dateRetourPrevue = $dateEmprunt->modify('+21 days');
 
         $emprunt = new Emprunt(
-            id: uniqid('', true),
             lecteur: $lecteur,
-            exemplaire: $exemplaire,
+            exemplaire: $exemplaireSauvegarder,
             dateEmprunt: $dateEmprunt,
             dateRetourPrevue: $dateRetourPrevue,
+            id: null
         );
 
-        $this->empruntRepository->save($emprunt);
+        $empruntSauvegarder = $this->empruntRepository->save($emprunt);
 
-        return $emprunt;
+        return $empruntSauvegarder;
+    }
+
+    public function emprunter(Lecteur $lecteur, string $livreId): Emprunt
+    {
+        $exemplaire = $this->exemplaireRepository->findDisponiblesByLivre($livreId)[0] ?? null;
+        return $this->enregistrerEmprunt($lecteur, $exemplaire);
     }
 
     /**
@@ -69,6 +75,12 @@ final class ServiceGestionEmprunt
 
         $this->exemplaireRepository->save($emprunt->getExemplaire());
         $this->empruntRepository->save($emprunt);
+    }
+
+    public function retourner(Emprunt $emprunt): void
+    {
+        $emprunt->cloturer(new \DateTimeImmutable);
+        $emprunt->getExemplaire()->retourner();
     }
 
     /**
