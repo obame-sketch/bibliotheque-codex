@@ -8,7 +8,7 @@ use App\Domain\Livre\LivreRepositoryInterface;
 
 /**
  * Cas d'utilisation pour consulter le catalogue de livres.
- * 
+ *
  * Retourne la liste complète de tous les livres disponibles dans la bibliothèque.
  */
 final readonly class ConsulterCatalogueUseCase

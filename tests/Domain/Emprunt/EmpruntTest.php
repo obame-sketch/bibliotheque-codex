@@ -10,8 +10,8 @@ use App\Domain\Lecteur\Lecteur;
 use App\Domain\Livre\Livre;
 
 beforeEach(function () {
-    $this->lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable(), 'lecteur-id');
-    $this->livre = new Livre('Titre', 'Auteur', '123', new \DateTimeImmutable(), 'livre-id');
+    $this->lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable, 'lecteur-id');
+    $this->livre = new Livre('Titre', 'Auteur', '123', new \DateTimeImmutable, 'livre-id');
     $this->exemplaire = new Exemplaire('BARRE', StatutExemplaire::DISPONIBLE, 'ex-id');
     $this->exemplaire->setLivre($this->livre);
     $this->dateEmprunt = new \DateTimeImmutable('2023-01-01');
@@ -59,8 +59,8 @@ test('cloturer met à jour la date de retour effective et le statut', function (
 
 test('cloturer lève une exception si l\'emprunt est déjà rendu', function () {
     $emprunt = new Emprunt($this->lecteur, $this->exemplaire, $this->dateEmprunt, $this->dateRetourPrevue);
-    $emprunt->cloturer(new \DateTimeImmutable());
-    $emprunt->cloturer(new \DateTimeImmutable());
+    $emprunt->cloturer(new \DateTimeImmutable);
+    $emprunt->cloturer(new \DateTimeImmutable);
 })->throws(\DomainException::class, 'Cet emprunt est déjà clôturé.');
 
 test('cloturer lève une exception si dateRetour antérieure à dateEmprunt', function () {

@@ -30,14 +30,14 @@ final readonly class RetournerLivreUseCase
     /**
      * Orchestre le retour d'un livre emprunté.
      *
-     * @param RetournerLivreDto $dto DTO contenant l'ID de l'emprunt
+     * @param  RetournerLivreDto  $dto  DTO contenant l'ID de l'emprunt
      *
      * @throws DomainException Si l'emprunt n'existe pas ou est déjà clôturé
      */
     public function execute(RetournerLivreDto $dto): void
     {
         $emprunt = $this->empruntRepository->findById($dto->empruntId());
-        if (!$emprunt) {
+        if (! $emprunt) {
             throw new DomainException("Action impossible : la référence de l'emprunt est invalide.");
         }
         $this->serviceGestionEmprunt->retourner($emprunt);

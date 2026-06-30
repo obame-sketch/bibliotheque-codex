@@ -21,5 +21,3 @@ final readonly class EmprunterLivreDto
         public string $livreId,
     ) {}
 }
-
-?>

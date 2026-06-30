@@ -14,7 +14,7 @@ beforeEach(function () {
 });
 
 test('execute appelle findAll et retourne la liste des livres', function () {
-    $date = new \DateTimeImmutable();
+    $date = new \DateTimeImmutable;
     $livresAttendus = [
         new Livre('Titre 1', 'Auteur 1', 'ISBN1', $date, 'id1'),
         new Livre('Titre 2', 'Auteur 2', 'ISBN2', $date, 'id2'),

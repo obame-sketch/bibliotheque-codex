@@ -20,14 +20,14 @@ class EmprunterLivreDtoTest extends TestCase
         $this->assertEquals($livreId, $dto->livreId());
     }
 
-    public function test_accesseur_lecteurId_retourne_la_valeur_correcte(): void
+    public function test_accesseur_lecteur_id_retourne_la_valeur_correcte(): void
     {
         $dto = new EmprunterLivreDto(lecteurId: 'lecteur-test', livreId: 'livre-test');
 
         $this->assertEquals('lecteur-test', $dto->lecteurId());
     }
 
-    public function test_accesseur_livreId_retourne_la_valeur_correcte(): void
+    public function test_accesseur_livre_id_retourne_la_valeur_correcte(): void
     {
         $dto = new EmprunterLivreDto(lecteurId: 'lecteur-test', livreId: 'livre-test');
 

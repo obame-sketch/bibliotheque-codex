@@ -60,6 +60,7 @@ class ServiceGestionEmprunt
     public function emprunter(Lecteur $lecteur, string $livreId): Emprunt
     {
         $exemplaire = $this->exemplaireRepository->findDisponiblesByLivre($livreId)[0] ?? null;
+
         return $this->enregistrerEmprunt($lecteur, $exemplaire);
     }
 

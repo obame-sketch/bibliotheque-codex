@@ -18,14 +18,14 @@ class RetournerLivreDtoTest extends TestCase
         $this->assertEquals($empruntId, $dto->empruntId());
     }
 
-    public function test_accesseur_empruntId_retourne_la_valeur_correcte(): void
+    public function test_accesseur_emprunt_id_retourne_la_valeur_correcte(): void
     {
         $dto = new RetournerLivreDto(empruntId: 'emprunt-test');
 
         $this->assertEquals('emprunt-test', $dto->empruntId());
     }
 
-    public function test_accepte_un_empruntId_vide(): void
+    public function test_accepte_un_emprunt_id_vide(): void
     {
         $dto = new RetournerLivreDto(empruntId: '');
 

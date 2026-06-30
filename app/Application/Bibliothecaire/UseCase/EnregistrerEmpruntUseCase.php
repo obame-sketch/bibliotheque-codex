@@ -36,6 +36,7 @@ final class EnregistrerEmpruntUseCase
         if ($exemplaire === null) {
             throw new \RuntimeException(sprintf('Exemplaire introuvable pour l\'ID %s.', $dto->exemplaireId));
         }
+
         return $this->serviceGestionEmprunt->enregistrerEmprunt($lecteur, $exemplaire);
     }
 }
