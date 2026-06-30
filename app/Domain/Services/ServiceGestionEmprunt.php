@@ -45,11 +45,11 @@ final class ServiceGestionEmprunt
         $dateRetourPrevue = $dateEmprunt->modify('+21 days');
 
         $emprunt = new Emprunt(
-            id: uniqid('', true),
             lecteur: $lecteur,
             exemplaire: $exemplaireSauvegarder,
             dateEmprunt: $dateEmprunt,
             dateRetourPrevue: $dateRetourPrevue,
+            id: null
         );
 
         $empruntSauvegarder = $this->empruntRepository->save($emprunt);

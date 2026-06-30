@@ -27,7 +27,7 @@ final class Livre
      * Initialise une nouvelle instance de Livre avec les informations essentielles.
      * Valide que les champs texte (titre, auteur, isbn) ne sont pas vides.
      *
-     * @param  string  $id  Identifiant unique du livre
+     * @param  string|null  $id  Identifiant unique du livre
      * @param  string  $titre  Titre du livre (ne doit pas être vide)
      * @param  string  $auteur  Auteur du livre (ne doit pas être vide)
      * @param  string  $isbn  ISBN du livre (ne doit pas être vide)
@@ -36,11 +36,11 @@ final class Livre
      * @throws \InvalidArgumentException Si le titre, auteur ou isbn est vide
      */
     public function __construct(
-        private readonly string $id,
         private string $titre,
         private string $auteur,
         private string $isbn,
         private \DateTimeImmutable $datePublication,
+        private ?string $id = null
     ) {
         $this->guardNonVide($titre, 'titre');
         $this->guardNonVide($auteur, 'auteur');

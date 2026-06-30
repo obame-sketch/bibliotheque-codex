@@ -7,7 +7,7 @@ namespace Tests\Application\Lecteur\UseCase;
 use App\Application\Lecteur\UseCase\ConsulterCatalogueUseCase;
 use App\Domain\Livre\Livre;
 use App\Domain\Livre\LivreRepositoryInterface;
-use DateTimeImmutable; // <--- AJOUT
+use DateTimeImmutable;
 
 beforeEach(function () {
     $this->repository = mock(LivreRepositoryInterface::class);

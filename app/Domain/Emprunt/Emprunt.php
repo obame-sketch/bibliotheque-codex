@@ -21,13 +21,13 @@ final class Emprunt
     private StatutEmprunt $statut;
 
     public function __construct(
-        private readonly string $id,
         private readonly Lecteur $lecteur,
         private readonly Exemplaire $exemplaire,
         private readonly \DateTimeImmutable $dateEmprunt,
         private readonly \DateTimeImmutable $dateRetourPrevue,
         ?\DateTimeImmutable $dateRetourEffective = null,
         ?StatutEmprunt $statut = null,
+        private ?string $id = null,
     ) {
         $this->dateRetourEffective = $dateRetourEffective;
         $this->statut = $statut ?? StatutEmprunt::EN_COURS;
