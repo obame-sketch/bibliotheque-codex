@@ -85,6 +85,30 @@ jobs:
           path: composer-audit-results.json
           retention-days: 7
 
+      # 4. Unit tests
+      - name: Prepare test environment
+        run: |
+          cp .env.example .env.testing || echo "No .env.example, creating empty"
+          php artisan key:generate --env=testing
+          php artisan config:clear --env=testing
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run migrations
+        run: php artisan migrate --env=testing --force
+        env:
+          APP_ENV: testing
+
+      - name: Run Unit Tests
+        id: tests
+        run: php artisan test
+        env:
+          APP_ENV: testing
+        continue-on-error: true
+
+      # 5. Post PR comment
       - name: Post PR Comment
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -94,7 +118,21 @@ jobs:
             let pintStatus = '${{ steps.pint.outcome }}' === 'success' ? '✅ Pass' : '❌ Fail';
             let stanStatus = '${{ steps.phpstan.outputs.sarif_valid }}' === 'true' ? '✅ SARIF uploaded' : '⚠️ No issues (empty report)';
             let auditStatus = '${{ steps.audit.outputs.audit_done }}' === 'true' ? '✅ Done' : '⚠️ No lock file';
-            const summary = `## 📊 Laravel Quality Check\n\n| Check | Status |\n|-------|--------|\n| **Code Style (Pint)** | ${pintStatus} |\n| **Static Analysis (PHPStan)** | ${stanStatus} |\n| **Security Audit** | ${auditStatus} |`;
+            let testStatus = '${{ steps.tests.outcome }}' === 'success' ? '✅ Pass' : '❌ Fail';
+
+            const summary = `## 📊 Laravel Quality Check\n\n| Check | Status |\n|-------|--------|\n| **Code Style (Pint)** | ${pintStatus} |\n| **Static Analysis (PHPStan)** | ${stanStatus} |\n| **Security Audit** | ${auditStatus} |\n| **Unit Tests** | ${testStatus} |`;
+
+            // Vérifier si la PR est verrouillée pour éviter l'erreur 403
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            if (issue.locked) {
+              console.warn('⚠️ La pull request est verrouillée – le commentaire ne sera pas posté.');
+              return;
+            }
+
             const { data: comments } = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
