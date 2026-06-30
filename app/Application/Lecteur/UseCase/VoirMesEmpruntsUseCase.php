@@ -23,8 +23,8 @@ final readonly class VoirMesEmpruntsUseCase
     /**
      * Exécute la récupération des emprunts du lecteur.
      *
-     * @param string $lecteurId L'identifiant du lecteur
-     * @return array<mixed>     Historique ou liste des emprunts du lecteur
+     * @param  string  $lecteurId  L'identifiant du lecteur
+     * @return array<mixed> Historique ou liste des emprunts du lecteur
      */
     public function execute(string $lecteurId): array
     {

@@ -48,6 +48,7 @@ final class EmprunterLivreUseCase
             throw new \RuntimeException(sprintf('Aucun exemplaire disponible pour le livre %s.', $dto->livreId));
         }
         $exemplaire = $this->serviceDisponibilite->obtenirExemplaireDisponible($dto->livreId);
+
         return $this->serviceGestionEmprunt->enregistrerEmprunt($lecteur, $exemplaire);
     }
 }

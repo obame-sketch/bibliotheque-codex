@@ -35,7 +35,7 @@ final class AjouterLivreUseCase
             isbn: $dto->isbn,
             datePublication: $dto->datePublication,
         );
-        $livreSauvegarder =$this->livreRepository->save($livre);
+        $livreSauvegarder = $this->livreRepository->save($livre);
         for ($index = 0; $index < $dto->nombreExemplaires; $index++) {
             $exemplaire = new Exemplaire(
                 id: null,
@@ -45,6 +45,7 @@ final class AjouterLivreUseCase
             $exemplaire->setLivre($livreSauvegarder);
             $exemplaireRepository->save($exemplaire);
         }
+
         return $livre;
     }
 }

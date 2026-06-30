@@ -6,6 +6,7 @@ namespace App\Tests\Domain\Services;
 
 use App\Domain\Emprunt\Emprunt;
 use App\Domain\Emprunt\EmpruntRepositoryInterface;
+use App\Domain\Emprunt\StatutEmprunt;
 use App\Domain\Exemplaire\Exemplaire;
 use App\Domain\Exemplaire\ExemplaireRepositoryInterface;
 use App\Domain\Exemplaire\StatutExemplaire;
@@ -21,8 +22,8 @@ beforeEach(function () {
         $this->exemplaireRepository
     );
 
-    $this->lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable(), 'lecteur-id');
-    $this->livre = new Livre('Titre', 'Auteur', '123', new \DateTimeImmutable(), 'livre-id');
+    $this->lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable, 'lecteur-id');
+    $this->livre = new Livre('Titre', 'Auteur', '123', new \DateTimeImmutable, 'livre-id');
     $this->exemplaire = new Exemplaire('BARRE', StatutExemplaire::DISPONIBLE, 'ex-id');
     $this->exemplaire->setLivre($this->livre);
 });
@@ -45,7 +46,7 @@ test('enregistrerEmprunt marque l\'exemplaire comme emprunté et sauvegarde l\'e
             return $emprunt instanceof Emprunt
                 && $emprunt->getLecteur() === $this->lecteur
                 && $emprunt->getExemplaire() === $this->exemplaire
-                && $emprunt->statut() === \App\Domain\Emprunt\StatutEmprunt::EN_COURS;
+                && $emprunt->statut() === StatutEmprunt::EN_COURS;
         })
         ->andReturnUsing(function ($emprunt) {
             // On simule l'assignation d'un ID par le repository
@@ -54,6 +55,7 @@ test('enregistrerEmprunt marque l\'exemplaire comme emprunté et sauvegarde l\'e
             $property = $reflection->getProperty('id');
             $property->setAccessible(true);
             $property->setValue($emprunt, 'new-id');
+
             return $emprunt;
         });
 
@@ -96,6 +98,7 @@ test('emprunter récupère un exemplaire disponible et appelle enregistrerEmprun
             $property = $reflection->getProperty('id');
             $property->setAccessible(true);
             $property->setValue($emprunt, 'emprunt-id');
+
             return $emprunt;
         });
 
@@ -130,14 +133,14 @@ test('enregistrerRetour clôture l\'emprunt et remet l\'exemplaire disponible', 
         ->shouldReceive('save')
         ->once()
         ->withArgs(function ($emprunt) {
-            return $emprunt->statut() === \App\Domain\Emprunt\StatutEmprunt::RENDU
+            return $emprunt->statut() === StatutEmprunt::RENDU
                 && $emprunt->dateRetourEffective() !== null;
         })
         ->andReturn($emprunt);
 
     $this->service->enregistrerRetour($emprunt);
 
-    expect($emprunt->statut())->toBe(\App\Domain\Emprunt\StatutEmprunt::RENDU);
+    expect($emprunt->statut())->toBe(StatutEmprunt::RENDU);
     expect($emprunt->getExemplaire()->statut())->toBe(StatutExemplaire::DISPONIBLE);
 });
 
@@ -155,7 +158,7 @@ test('retourner modifie les entités sans persister (ne fait que les appels mét
 
     $this->service->retourner($emprunt);
 
-    expect($emprunt->statut())->toBe(\App\Domain\Emprunt\StatutEmprunt::RENDU);
+    expect($emprunt->statut())->toBe(StatutEmprunt::RENDU);
     expect($emprunt->getExemplaire()->statut())->toBe(StatutExemplaire::DISPONIBLE);
     // Vérifier que les repositories ne sont pas appelés
 });

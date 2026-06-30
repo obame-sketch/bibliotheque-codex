@@ -26,7 +26,7 @@ test('le constructeur lève une exception si le titre est vide', function () {
         titre: '',
         auteur: 'Auteur',
         isbn: '1234567890',
-        datePublication: new \DateTimeImmutable()
+        datePublication: new \DateTimeImmutable
     );
 })->throws(\InvalidArgumentException::class, 'Le champ "titre" ne peut pas être vide');
 
@@ -35,7 +35,7 @@ test('le constructeur lève une exception si l\'auteur est vide', function () {
         titre: 'Titre',
         auteur: '',
         isbn: '1234567890',
-        datePublication: new \DateTimeImmutable()
+        datePublication: new \DateTimeImmutable
     );
 })->throws(\InvalidArgumentException::class, 'Le champ "auteur" ne peut pas être vide');
 
@@ -44,7 +44,7 @@ test('le constructeur lève une exception si l\'isbn est vide', function () {
         titre: 'Titre',
         auteur: 'Auteur',
         isbn: '',
-        datePublication: new \DateTimeImmutable()
+        datePublication: new \DateTimeImmutable
     );
 })->throws(\InvalidArgumentException::class, 'Le champ "isbn" ne peut pas être vide');
 
@@ -61,7 +61,7 @@ test('un livre n\'est pas publié si sa date de publication est future', functio
 });
 
 test('on peut mettre à jour le titre', function () {
-    $livre = new Livre('Titre', 'Auteur', '123', new \DateTimeImmutable());
+    $livre = new Livre('Titre', 'Auteur', '123', new \DateTimeImmutable);
     $livre->mettreAJourTitre('Nouveau Titre');
     expect($livre->titre())->toBe('Nouveau Titre');
 });

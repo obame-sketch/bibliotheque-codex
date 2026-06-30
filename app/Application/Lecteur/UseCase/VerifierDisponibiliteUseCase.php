@@ -8,7 +8,7 @@ use App\Domain\Services\ServiceDisponibilite;
 
 /**
  * Cas d'utilisation pour vérifier la disponibilité d'un livre.
- * 
+ *
  * Vérifie si au moins un exemplaire d'un livre est disponible à l'emprunt.
  */
 final readonly class VerifierDisponibiliteUseCase
@@ -23,8 +23,8 @@ final readonly class VerifierDisponibiliteUseCase
     /**
      * Exécute la vérification de disponibilité d'un livre.
      *
-     * @param string $livreId L'identifiant du livre à vérifier
-     * @return bool          Vrai si le livre est disponible
+     * @param  string  $livreId  L'identifiant du livre à vérifier
+     * @return bool Vrai si le livre est disponible
      */
     public function execute(string $livreId): bool
     {

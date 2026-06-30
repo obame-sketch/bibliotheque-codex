@@ -38,7 +38,7 @@ beforeEach(function () {
 });
 
 test('execute emprunte avec succès un livre disponible', function () {
-    $lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable(), $this->lecteurId);
+    $lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable, $this->lecteurId);
 
     $this->lecteurRepository
         ->shouldReceive('findById')
@@ -56,8 +56,8 @@ test('execute emprunte avec succès un livre disponible', function () {
     $empruntAttendu = new Emprunt(
         $lecteur,
         $exemplaire,
-        new \DateTimeImmutable(),
-        (new \DateTimeImmutable())->modify('+21 days'),
+        new \DateTimeImmutable,
+        (new \DateTimeImmutable)->modify('+21 days'),
         id: 'emprunt-789'
     );
 
@@ -85,7 +85,7 @@ test('execute lève une exception si le lecteur est introuvable', function () {
 })->throws(DomainException::class, 'Action impossible : le lecteur spécifié est introuvable.');
 
 test('execute lève une exception si le livre est indisponible', function () {
-    $lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable(), $this->lecteurId);
+    $lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable, $this->lecteurId);
 
     $this->lecteurRepository
         ->shouldReceive('findById')

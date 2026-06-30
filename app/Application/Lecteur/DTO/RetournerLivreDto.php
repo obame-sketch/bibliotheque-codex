@@ -6,7 +6,7 @@ namespace App\Application\Lecteur\DTO;
 
 /**
  * Data Transfer Object immuable pour le retour d'un livre.
- * 
+ *
  * Ce DTO transporte l'identifiant de l'emprunt à retourner.
  */
 final readonly class RetournerLivreDto
@@ -14,7 +14,7 @@ final readonly class RetournerLivreDto
     /**
      * Constructeur du DTO de retour.
      *
-     * @param string $empruntId Identifiant unique de l'emprunt à retourner
+     * @param  string  $empruntId  Identifiant unique de l'emprunt à retourner
      */
     public function __construct(
         private string $empruntId

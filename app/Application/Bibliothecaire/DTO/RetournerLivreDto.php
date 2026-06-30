@@ -19,5 +19,3 @@ final readonly class RetournerLivreDto
         public string $empruntId,
     ) {}
 }
-
-?>

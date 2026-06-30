@@ -7,7 +7,7 @@ use App\Domain\Exemplaire\StatutExemplaire;
 use App\Domain\Livre\Livre;
 
 beforeEach(function () {
-    $this->livre = new Livre('Titre', 'Auteur', '123', new \DateTimeImmutable(), 'livre-id');
+    $this->livre = new Livre('Titre', 'Auteur', '123', new \DateTimeImmutable, 'livre-id');
     $this->exemplaire = new Exemplaire(
         codeBarre: 'BARRE123',
         statut: StatutExemplaire::DISPONIBLE,

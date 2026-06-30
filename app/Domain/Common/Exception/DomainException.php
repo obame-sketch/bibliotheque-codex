@@ -7,6 +7,4 @@ namespace App\Domain\Common\Exception;
 /**
  * Exception du domaine pour les erreurs métier.
  */
-class DomainException extends \RuntimeException
-{
-}
+class DomainException extends \RuntimeException {}

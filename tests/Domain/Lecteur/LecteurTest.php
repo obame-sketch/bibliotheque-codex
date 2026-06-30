@@ -22,7 +22,7 @@ test('un lecteur peut être créé avec des données valides', function () {
 });
 
 test('le constructeur valide l\'email', function () {
-    new Lecteur('Dupont', 'Jean', 'invalid-email', new \DateTimeImmutable());
+    new Lecteur('Dupont', 'Jean', 'invalid-email', new \DateTimeImmutable);
 })->throws(\InvalidArgumentException::class, 'L\'adresse e-mail fournie est invalide.');
 
 test('un lecteur est adhérent actif si la date d\'adhésion est passée', function () {
@@ -36,18 +36,18 @@ test('un lecteur n\'est pas adhérent si la date d\'adhésion est future', funct
 });
 
 test('on peut changer l\'email avec validation', function () {
-    $lecteur = new Lecteur('Dupont', 'Jean', 'old@test.com', new \DateTimeImmutable());
+    $lecteur = new Lecteur('Dupont', 'Jean', 'old@test.com', new \DateTimeImmutable);
     $lecteur->changerEmail('new@test.com');
     expect($lecteur->email())->toBe('new@test.com');
 });
 
 test('changerEmail lève une exception si email invalide', function () {
-    $lecteur = new Lecteur('Dupont', 'Jean', 'old@test.com', new \DateTimeImmutable());
+    $lecteur = new Lecteur('Dupont', 'Jean', 'old@test.com', new \DateTimeImmutable);
     $lecteur->changerEmail('invalid');
 })->throws(\InvalidArgumentException::class);
 
 test('on peut renommer un lecteur', function () {
-    $lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable());
+    $lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable);
     $lecteur->renommer('Martin', 'Marie');
     expect($lecteur->nom())->toBe('Martin');
     expect($lecteur->prenom())->toBe('Marie');

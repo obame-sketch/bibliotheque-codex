@@ -35,21 +35,22 @@ final readonly class EmprunterLivreUseCase
     /**
      * Orchestre le processus d'emprunt d'un livre par un lecteur.
      *
-     * @param EmprunterLivreDto $dto DTO contenant lecteurId et livreId
-     * @return Emprunt           L'emprunt créé
+     * @param  EmprunterLivreDto  $dto  DTO contenant lecteurId et livreId
+     * @return Emprunt L'emprunt créé
      *
      * @throws DomainException Si le lecteur n'existe pas ou si le livre est indisponible
      */
     public function execute(EmprunterLivreDto $dto): Emprunt
     {
         $lecteur = $this->lecteurRepository->findById($dto->lecteurId());
-        if (!$lecteur) {
-            throw new DomainException("Action impossible : le lecteur spécifié est introuvable.");
+        if (! $lecteur) {
+            throw new DomainException('Action impossible : le lecteur spécifié est introuvable.');
         }
         $estDisponible = $this->serviceDisponibilite->verifier($dto->livreId());
-        if (!$estDisponible) {
+        if (! $estDisponible) {
             throw new DomainException("Action impossible : le livre demandé n'est pas disponible actuellement.");
         }
+
         return $this->serviceGestionEmprunt->emprunter($lecteur, $dto->livreId());
     }
 }

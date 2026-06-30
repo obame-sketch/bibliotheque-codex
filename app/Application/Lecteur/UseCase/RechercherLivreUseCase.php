@@ -23,8 +23,8 @@ final readonly class RechercherLivreUseCase
     /**
      * Exécute la recherche de livres par mot-clé.
      *
-     * @param string $keyword Le mot-clé de recherche
-     * @return array<mixed>   Résultats de recherche
+     * @param  string  $keyword  Le mot-clé de recherche
+     * @return array<mixed> Résultats de recherche
      */
     public function execute(string $keyword): array
     {
