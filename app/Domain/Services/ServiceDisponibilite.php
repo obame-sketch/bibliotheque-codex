@@ -13,7 +13,7 @@ use App\Domain\Exemplaire\ExemplaireRepositoryInterface;
  * Fournit des méthodes pour vérifier s'il existe des exemplaires disponibles
  * pour un livre donné et pour obtenir un exemplaire disponible.
  */
-final class ServiceDisponibilite
+class ServiceDisponibilite
 {
     private ExemplaireRepositoryInterface $exemplaireRepository;
 

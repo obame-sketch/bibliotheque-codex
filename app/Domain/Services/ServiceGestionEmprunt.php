@@ -19,7 +19,7 @@ use App\Domain\Lecteur\Lecteur;
  * - enregistrer un retour (clôturer l'emprunt et remettre l'exemplaire disponible)
  * - calculer le retard d'un emprunt
  */
-final class ServiceGestionEmprunt
+class ServiceGestionEmprunt
 {
     public function __construct(
         private readonly EmpruntRepositoryInterface $empruntRepository,

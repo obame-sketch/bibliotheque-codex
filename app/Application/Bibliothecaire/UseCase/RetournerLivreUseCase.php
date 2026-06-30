@@ -30,16 +30,11 @@ final class RetournerLivreUseCase
      */
     public function execute(RetournerLivreDto $dto): void
     {
-        // Étape 1 : Vérifier que l'emprunt existe
         $emprunt = $this->empruntRepository->findById($dto->empruntId);
 
         if ($emprunt === null) {
             throw new \RuntimeException(sprintf('Emprunt introuvable pour l\'ID %s.', $dto->empruntId));
         }
-
-        // Étape 2 : Enregistrer le retour via le service de gestion
-        // Le service met à jour le statut de l'exemplaire (DISPONIBLE)
-        // et clôture l'emprunt avec la date du jour
         $this->serviceGestionEmprunt->enregistrerRetour($emprunt);
     }
 }

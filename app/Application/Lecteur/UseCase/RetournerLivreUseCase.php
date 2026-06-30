@@ -11,7 +11,7 @@ use App\Domain\Services\ServiceGestionEmprunt;
 
 /**
  * Cas d'utilisation pour retourner un livre emprunté.
- * 
+ *
  * Orchestre le retour d'un livre :
  * - Vérifie l'existence de l'emprunt
  * - Déléguet les règles de modification à l'état au service du domaine
@@ -36,17 +36,11 @@ final readonly class RetournerLivreUseCase
      */
     public function execute(RetournerLivreDto $dto): void
     {
-        // Étape 1 : Vérifier que l'emprunt existe
         $emprunt = $this->empruntRepository->findById($dto->empruntId());
-
         if (!$emprunt) {
             throw new DomainException("Action impossible : la référence de l'emprunt est invalide.");
         }
-
-        // Étape 2 : Délégation des règles de modification de l'état au service du Domaine
         $this->serviceGestionEmprunt->retourner($emprunt);
-
-        // Étape 3 : Persistance de la mise à jour via l'interface du dépôt de domaine
         $this->empruntRepository->save($emprunt);
     }
 }

@@ -14,7 +14,7 @@ use App\Domain\Services\ServiceGestionEmprunt;
 
 /**
  * Cas d'utilisation pour emprunter un livre.
- * 
+ *
  * Orchestre le processus d'emprunt d'un livre par un lecteur :
  * - Vérifie l'existence du lecteur
  * - Vérifie la disponibilité du livre
@@ -42,20 +42,14 @@ final readonly class EmprunterLivreUseCase
      */
     public function execute(EmprunterLivreDto $dto): Emprunt
     {
-        // Étape 1 : Vérifier que le lecteur existe
         $lecteur = $this->lecteurRepository->findById($dto->lecteurId());
-
         if (!$lecteur) {
             throw new DomainException("Action impossible : le lecteur spécifié est introuvable.");
         }
-
-        // Étape 2 : Vérifier la disponibilité du livre
         $estDisponible = $this->serviceDisponibilite->verifier($dto->livreId());
         if (!$estDisponible) {
             throw new DomainException("Action impossible : le livre demandé n'est pas disponible actuellement.");
         }
-
-        // Étape 3 : Créer l'emprunt via le service de gestion
         return $this->serviceGestionEmprunt->emprunter($lecteur, $dto->livreId());
     }
 }

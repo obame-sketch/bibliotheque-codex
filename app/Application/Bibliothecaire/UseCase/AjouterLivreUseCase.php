@@ -29,7 +29,7 @@ final class AjouterLivreUseCase
     public function execute(AjouterLivreDto $dto): Livre
     {
         $livre = new Livre(
-            id: uniqid('', true),
+            id: null,
             titre: $dto->titre,
             auteur: $dto->auteur,
             isbn: $dto->isbn,
@@ -38,12 +38,12 @@ final class AjouterLivreUseCase
         $livreSauvegarder =$this->livreRepository->save($livre);
         for ($index = 0; $index < $dto->nombreExemplaires; $index++) {
             $exemplaire = new Exemplaire(
-                id: uniqid('', true),
+                id: null,
                 codeBarre: sprintf('%s-%s', $livreSauvegarder->id(), $index + 1),
                 statut: StatutExemplaire::DISPONIBLE,
             );
-            $exemplaire->setLivre($livre);
-            $this->exemplaireRepository->save($exemplaire);
+            $exemplaire->setLivre($livreSauvegarder);
+            $exemplaireRepository->save($exemplaire);
         }
         return $livre;
     }

@@ -36,30 +36,18 @@ final class EmprunterLivreUseCase
      */
     public function execute(EmprunterLivreDto $dto): Emprunt
     {
-        // Étape 1 : Vérifier que le lecteur existe
         $lecteur = $this->lecteurRepository->findById($dto->lecteurId);
-
         if ($lecteur === null) {
             throw new \RuntimeException(sprintf('Lecteur introuvable pour l\'ID %s.', $dto->lecteurId));
         }
-
-        // Étape 2 : Vérifier que le livre existe
         $livre = $this->livreRepository->findById($dto->livreId);
-
         if ($livre === null) {
             throw new \RuntimeException(sprintf('Livre introuvable pour l\'ID %s.', $dto->livreId));
         }
-
-        // Étape 3 : Vérifier la disponibilité d'au moins un exemplaire
         if (! $this->serviceDisponibilite->verifierDisponibilite($dto->livreId)) {
             throw new \RuntimeException(sprintf('Aucun exemplaire disponible pour le livre %s.', $dto->livreId));
         }
-
-        // Étape 4 : Récupérer un exemplaire disponible
         $exemplaire = $this->serviceDisponibilite->obtenirExemplaireDisponible($dto->livreId);
-
-        // Étape 5 : Enregistrer l'emprunt via le service de gestion
-        // Le service met à jour le statut de l'exemplaire et crée l'enregistrement
         return $this->serviceGestionEmprunt->enregistrerEmprunt($lecteur, $exemplaire);
     }
 }

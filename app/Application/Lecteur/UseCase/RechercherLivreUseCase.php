@@ -30,7 +30,7 @@ final readonly class RechercherLivreUseCase
     {
         $cleanKeyword = trim($keyword);
         if (empty($cleanKeyword)) {
-            return [];
+            return $this->livreRepository->findAll();
         }
 
         return $this->livreRepository->search($cleanKeyword);
