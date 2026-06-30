@@ -7,48 +7,36 @@ namespace Tests\Application\Lecteur\UseCase;
 use App\Application\Lecteur\UseCase\ConsulterCatalogueUseCase;
 use App\Domain\Livre\Livre;
 use App\Domain\Livre\LivreRepositoryInterface;
-use DateTimeImmutable;
 
 beforeEach(function () {
-    $this->repository = mock(LivreRepositoryInterface::class);
-    $this->useCase = new ConsulterCatalogueUseCase($this->repository);
+    $this->livreRepository = mock(LivreRepositoryInterface::class);
+    $this->useCase = new ConsulterCatalogueUseCase($this->livreRepository);
 });
 
-it('retourne tous les livres du catalogue', function () {
-    $livre1 = new Livre(
-        '1',
-        'Titre 1',
-        'Auteur 1',
-        'ISBN1',
-        new DateTimeImmutable() // maintenant reconnu
-    );
-    $livre2 = new Livre(
-        '2',
-        'Titre 2',
-        'Auteur 2',
-        'ISBN2',
-        new DateTimeImmutable()
-    );
+test('execute appelle findAll et retourne la liste des livres', function () {
+    $date = new \DateTimeImmutable();
+    $livresAttendus = [
+        new Livre('Titre 1', 'Auteur 1', 'ISBN1', $date, 'id1'),
+        new Livre('Titre 2', 'Auteur 2', 'ISBN2', $date, 'id2'),
+    ];
 
-    $this->repository->shouldReceive('findAll')
+    $this->livreRepository
+        ->shouldReceive('findAll')
         ->once()
-        ->andReturn([$livre1, $livre2]);
+        ->andReturn($livresAttendus);
 
     $resultat = $this->useCase->execute();
 
-    expect($resultat)->toBeArray();
-    expect($resultat)->toHaveCount(2);
-    expect($resultat[0])->toBe($livre1);
-    expect($resultat[1])->toBe($livre2);
+    expect($resultat)->toBe($livresAttendus);
 });
 
-it('retourne un tableau vide si le catalogue est vide', function () {
-    $this->repository->shouldReceive('findAll')
+test('execute retourne un tableau vide lorsque le catalogue est vide', function () {
+    $this->livreRepository
+        ->shouldReceive('findAll')
         ->once()
         ->andReturn([]);
 
     $resultat = $this->useCase->execute();
 
-    expect($resultat)->toBeArray();
-    expect($resultat)->toBeEmpty();
+    expect($resultat)->toBe([]);
 });
