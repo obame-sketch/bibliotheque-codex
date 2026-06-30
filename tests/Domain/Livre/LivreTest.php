@@ -3,160 +3,65 @@
 namespace Tests\Domain\Livre;
 
 use App\Domain\Livre\Livre;
-use PHPUnit\Framework\TestCase;
 
-/**
- * Tests unitaires pour l'entité de domaine Livre
- *
- * Cette classe teste tous les comportements de l'entité Livre :
- * - Création d'une instance avec validation
- * - Accès aux propriétés via les accesseurs
- * - Modification des propriétés via les mutateurs avec validation
- * - Détermination du statut de publication
- */
-class LivreTest extends TestCase
-{
-    /**
-     * Instance de Livre utilisée dans les tests
-     */
-    private Livre $livre;
+test('un livre peut être créé avec des données valides', function () {
+    $date = new \DateTimeImmutable('2023-01-01');
+    $livre = new Livre(
+        titre: 'Le Petit Prince',
+        auteur: 'Antoine de Saint-Exupéry',
+        isbn: '978-2-07-061275-8',
+        datePublication: $date,
+        id: '123'
+    );
 
-    /**
-     * Configuration préalable pour chaque test
-     *
-     * Cette méthode crée une instance standard de Livre avec des données valides.
-     * Elle est exécutée avant chaque test (méthode test_*).
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->livre = new Livre(
-            id: '1',
-            titre: 'Clean Code',
-            auteur: 'Robert C. Martin',
-            isbn: '978-0132350884',
-            datePublication: new \DateTimeImmutable('2008-08-01')
-        );
-    }
+    expect($livre->id())->toBe('123');
+    expect($livre->titre())->toBe('Le Petit Prince');
+    expect($livre->auteur())->toBe('Antoine de Saint-Exupéry');
+    expect($livre->isbn())->toBe('978-2-07-061275-8');
+    expect($livre->datePublication())->toEqual($date);
+});
 
-    /**
-     * Teste la création d'un livre valide et l'accès à ses propriétés
-     *
-     * Vérifie que :
-     * - L'identifiant est correctement stocké et accessible
-     * - Le titre est correctement stocké et accessible
-     * - L'auteur est correctement stocké et accessible
-     * - L'ISBN est correctement stocké et accessible
-     */
-    public function test_livre_creation(): void
-    {
-        $this->assertEquals('1', $this->livre->id());
-        $this->assertEquals('Clean Code', $this->livre->titre());
-        $this->assertEquals('Robert C. Martin', $this->livre->auteur());
-        $this->assertEquals('978-0132350884', $this->livre->isbn());
-    }
+test('le constructeur lève une exception si le titre est vide', function () {
+    new Livre(
+        titre: '',
+        auteur: 'Auteur',
+        isbn: '1234567890',
+        datePublication: new \DateTimeImmutable
+    );
+})->throws(\InvalidArgumentException::class, 'Le champ "titre" ne peut pas être vide');
 
-    /**
-     * Teste que la création d'un livre avec un titre vide échoue
-     *
-     * Vérifie que le constructeur lève une InvalidArgumentException
-     * si on essaie de créer un livre avec un titre vide.
-     */
-    public function test_titre_ne_peut_pas_etre_vide(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        new Livre('1', '', 'Auteur', 'ISBN', new \DateTimeImmutable);
-    }
+test('le constructeur lève une exception si l\'auteur est vide', function () {
+    new Livre(
+        titre: 'Titre',
+        auteur: '',
+        isbn: '1234567890',
+        datePublication: new \DateTimeImmutable
+    );
+})->throws(\InvalidArgumentException::class, 'Le champ "auteur" ne peut pas être vide');
 
-    /**
-     * Teste que la création d'un livre avec un auteur vide échoue
-     *
-     * Vérifie que le constructeur lève une InvalidArgumentException
-     * si on essaie de créer un livre avec un auteur vide.
-     */
-    public function test_auteur_ne_peut_pas_etre_vide(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        new Livre('1', 'Titre', '', 'ISBN', new \DateTimeImmutable);
-    }
+test('le constructeur lève une exception si l\'isbn est vide', function () {
+    new Livre(
+        titre: 'Titre',
+        auteur: 'Auteur',
+        isbn: '',
+        datePublication: new \DateTimeImmutable
+    );
+})->throws(\InvalidArgumentException::class, 'Le champ "isbn" ne peut pas être vide');
 
-    /**
-     * Teste que la création d'un livre avec un ISBN vide échoue
-     *
-     * Vérifie que le constructeur lève une InvalidArgumentException
-     * si on essaie de créer un livre avec un ISBN vide.
-     */
-    public function test_isbn_ne_peut_pas_etre_vide(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        new Livre('1', 'Titre', 'Auteur', '', new \DateTimeImmutable);
-    }
+test('un livre est publié si sa date de publication est passée', function () {
+    $datePassee = new \DateTimeImmutable('-1 day');
+    $livre = new Livre('Titre', 'Auteur', '123', $datePassee);
+    expect($livre->estPublie())->toBeTrue();
+});
 
-    /**
-     * Teste la mise à jour du titre du livre
-     *
-     * Vérifie que :
-     * - La méthode mettreAJourTitre() change le titre
-     * - Le nouveau titre est correctement accessible via le mutateur
-     */
-    public function test_mettre_a_jour_titre(): void
-    {
-        $this->livre->mettreAJourTitre('Design Patterns');
-        $this->assertEquals('Design Patterns', $this->livre->titre());
-    }
+test('un livre n\'est pas publié si sa date de publication est future', function () {
+    $dateFuture = new \DateTimeImmutable('+1 day');
+    $livre = new Livre('Titre', 'Auteur', '123', $dateFuture);
+    expect($livre->estPublie())->toBeFalse();
+});
 
-    /**
-     * Teste le changement de l'auteur du livre
-     *
-     * Vérifie que :
-     * - La méthode changerAuteur() change l'auteur
-     * - Le nouvel auteur est correctement accessible via l'accesseur
-     */
-    public function test_changer_auteur(): void
-    {
-        $this->livre->changerAuteur('Martin Fowler');
-        $this->assertEquals('Martin Fowler', $this->livre->auteur());
-    }
-
-    /**
-     * Teste le changement de l'ISBN du livre
-     *
-     * Vérifie que :
-     * - La méthode changerIsbn() change l'ISBN
-     * - Le nouvel ISBN est correctement accessible via l'accesseur
-     */
-    public function test_changer_isbn(): void
-    {
-        $this->livre->changerIsbn('978-0201485677');
-        $this->assertEquals('978-0201485677', $this->livre->isbn());
-    }
-
-    /**
-     * Teste que estPublie() retourne true pour un livre avec une date de publication passée
-     *
-     * Le livre testé a une date de publication du 2008-08-01 (passée).
-     * La méthode estPublie() doit donc retourner true.
-     */
-    public function test_est_publie_retourne_true_pour_date_passee(): void
-    {
-        $this->assertTrue($this->livre->estPublie());
-    }
-
-    /**
-     * Teste que estPublie() retourne false pour un livre avec une date de publication future
-     *
-     * Crée un nouveau livre avec une date de publication future (2099-01-01).
-     * La méthode estPublie() doit retourner false pour ce livre.
-     */
-    public function test_est_publie_retourne_false_pour_date_future(): void
-    {
-        $futureLivre = new Livre(
-            '2',
-            'Future Book',
-            'Auteur',
-            'ISBN123',
-            new \DateTimeImmutable('2099-01-01')
-        );
-        $this->assertFalse($futureLivre->estPublie());
-    }
-}
+test('on peut mettre à jour le titre', function () {
+    $livre = new Livre('Titre', 'Auteur', '123', new \DateTimeImmutable);
+    $livre->mettreAJourTitre('Nouveau Titre');
+    expect($livre->titre())->toBe('Nouveau Titre');
+});

@@ -18,9 +18,9 @@ final class Exemplaire
     private Livre $livre;
 
     public function __construct(
-        private readonly string $id,
         private string $codeBarre,
         private StatutExemplaire $statut,
+        private ?string $id = null
     ) {
         $this->guardNonVide($codeBarre, 'codeBarre');
     }

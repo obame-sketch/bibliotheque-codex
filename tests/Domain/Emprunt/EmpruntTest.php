@@ -7,123 +7,95 @@ use App\Domain\Emprunt\StatutEmprunt;
 use App\Domain\Exemplaire\Exemplaire;
 use App\Domain\Exemplaire\StatutExemplaire;
 use App\Domain\Lecteur\Lecteur;
-use PHPUnit\Framework\TestCase;
+use App\Domain\Livre\Livre;
 
-class EmpruntTest extends TestCase
-{
-    private Emprunt $emprunt;
+beforeEach(function () {
+    $this->lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable, 'lecteur-id');
+    $this->livre = new Livre('Titre', 'Auteur', '123', new \DateTimeImmutable, 'livre-id');
+    $this->exemplaire = new Exemplaire('BARRE', StatutExemplaire::DISPONIBLE, 'ex-id');
+    $this->exemplaire->setLivre($this->livre);
+    $this->dateEmprunt = new \DateTimeImmutable('2023-01-01');
+    $this->dateRetourPrevue = $this->dateEmprunt->modify('+21 days');
+});
 
-    private Lecteur $lecteur;
+test('un emprunt peut être créé avec des données valides', function () {
+    $dateEmprunt = new \DateTimeImmutable('-1 day');
+    $dateRetourPrevue = $dateEmprunt->modify('+21 days');
 
-    private Exemplaire $exemplaire;
+    $emprunt = new Emprunt(
+        lecteur: $this->lecteur,
+        exemplaire: $this->exemplaire,
+        dateEmprunt: $dateEmprunt,
+        dateRetourPrevue: $dateRetourPrevue,
+        id: 'emprunt-id'
+    );
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    expect($emprunt->getId())->toBe('emprunt-id');
+    expect($emprunt->getLecteur())->toBe($this->lecteur);
+    expect($emprunt->getExemplaire())->toBe($this->exemplaire);
+    expect($emprunt->dateEmprunt())->toEqual($dateEmprunt);
+    expect($emprunt->dateRetourPrevue())->toEqual($dateRetourPrevue);
+    expect($emprunt->dateRetourEffective())->toBeNull();
+    expect($emprunt->statut())->toBe(StatutEmprunt::EN_COURS);
+});
 
-        $this->lecteur = new Lecteur(
-            '1',
-            'Dupont',
-            'Jean',
-            'jean@example.com',
-            new \DateTimeImmutable('2024-01-01')
-        );
+test('le constructeur lève une exception si dateRetourPrevue < dateEmprunt', function () {
+    new Emprunt(
+        $this->lecteur,
+        $this->exemplaire,
+        $this->dateEmprunt,
+        $this->dateEmprunt->modify('-1 day')
+    );
+})->throws(\InvalidArgumentException::class, 'La date de retour prévue doit être postérieure à la date d\'emprunt.');
 
-        $this->exemplaire = new Exemplaire(
-            '1',
-            'CODE-001',
-            StatutExemplaire::DISPONIBLE
-        );
+test('cloturer met à jour la date de retour effective et le statut', function () {
+    $emprunt = new Emprunt($this->lecteur, $this->exemplaire, $this->dateEmprunt, $this->dateRetourPrevue);
+    $dateRetour = new \DateTimeImmutable('2023-01-22');
+    $emprunt->cloturer($dateRetour);
 
-        $now = new \DateTimeImmutable;
-        $this->emprunt = new Emprunt(
-            id: '1',
-            lecteur: $this->lecteur,
-            exemplaire: $this->exemplaire,
-            dateEmprunt: $now,
-            dateRetourPrevue: $now->modify('+21 days')
-        );
-    }
+    expect($emprunt->dateRetourEffective())->toEqual($dateRetour);
+    expect($emprunt->statut())->toBe(StatutEmprunt::RENDU);
+});
 
-    public function test_emprunt_creation(): void
-    {
-        $this->assertEquals('1', $this->emprunt->getId());
-        $this->assertEquals($this->lecteur, $this->emprunt->getLecteur());
-        $this->assertEquals($this->exemplaire, $this->emprunt->getExemplaire());
-        $this->assertEquals(StatutEmprunt::EN_COURS, $this->emprunt->statut());
-        $this->assertNull($this->emprunt->dateRetourEffective());
-    }
+test('cloturer lève une exception si l\'emprunt est déjà rendu', function () {
+    $emprunt = new Emprunt($this->lecteur, $this->exemplaire, $this->dateEmprunt, $this->dateRetourPrevue);
+    $emprunt->cloturer(new \DateTimeImmutable);
+    $emprunt->cloturer(new \DateTimeImmutable);
+})->throws(\DomainException::class, 'Cet emprunt est déjà clôturé.');
 
-    public function test_date_retour_prevue_doit_etre_posterieure_a_date_emprunt(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $now = new \DateTimeImmutable;
-        new Emprunt(
-            '1',
-            $this->lecteur,
-            $this->exemplaire,
-            $now,
-            $now->modify('-5 days')
-        );
-    }
+test('cloturer lève une exception si dateRetour antérieure à dateEmprunt', function () {
+    $emprunt = new Emprunt($this->lecteur, $this->exemplaire, $this->dateEmprunt, $this->dateRetourPrevue);
+    $emprunt->cloturer($this->dateEmprunt->modify('-1 day'));
+})->throws(\InvalidArgumentException::class, 'La date de retour effective ne peut pas être antérieure à la date d\'emprunt.');
 
-    public function test_cloturer_emprunt(): void
-    {
-        $dateRetour = $this->emprunt->dateRetourPrevue();
-        $this->emprunt->cloturer($dateRetour);
+test('estEnRetard retourne vrai si la date actuelle dépasse dateRetourPrevue (et pas encore rendu)', function () {
+    $dateRetourPrevuePassee = new \DateTimeImmutable('-1 day');
+    $empruntEnRetard = new Emprunt(
+        $this->lecteur,
+        $this->exemplaire,
+        $this->dateEmprunt,
+        $dateRetourPrevuePassee
+    );
+    expect($empruntEnRetard->estEnRetard())->toBeTrue();
+});
 
-        $this->assertEquals(StatutEmprunt::RENDU, $this->emprunt->statut());
-        $this->assertEquals($dateRetour, $this->emprunt->dateRetourEffective());
-    }
+test('estEnRetard retourne faux si la date de retour effective est dans les délais', function () {
+    $emprunt = new Emprunt($this->lecteur, $this->exemplaire, $this->dateEmprunt, $this->dateRetourPrevue);
+    $emprunt->cloturer($this->dateRetourPrevue);
+    expect($emprunt->estEnRetard())->toBeFalse();
+});
 
-    public function test_cloturer_emprunt_ne_peut_pas_etre_anterior_a_date_emprunt(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->emprunt->cloturer($this->emprunt->dateEmprunt()->modify('-1 day'));
-    }
+test('joursDeRetard retourne 0 si pas de retard', function () {
+    $emprunt = new Emprunt($this->lecteur, $this->exemplaire, $this->dateEmprunt, $this->dateRetourPrevue);
+    $emprunt->cloturer($this->dateRetourPrevue);
+    expect($emprunt->joursDeRetard())->toBe(0);
+});
 
-    public function test_est_en_retard_retourne_false_avant_date_limite(): void
-    {
-        $this->assertFalse($this->emprunt->estEnRetard());
-    }
-
-    public function test_est_en_retard_retourne_true_apres_date_limite(): void
-    {
-        $empruntAvecDateRetourPassee = new Emprunt(
-            '2',
-            $this->lecteur,
-            $this->exemplaire,
-            new \DateTimeImmutable('2024-01-01'),
-            new \DateTimeImmutable('2024-01-10')
-        );
-
-        $this->assertTrue($empruntAvecDateRetourPassee->estEnRetard());
-    }
-
-    public function test_jours_de_retard_calcul_correct(): void
-    {
-        $empruntAvecRetard = new Emprunt(
-            '2',
-            $this->lecteur,
-            $this->exemplaire,
-            new \DateTimeImmutable('2024-01-01'),
-            new \DateTimeImmutable('2024-01-10')
-        );
-
-        $retard = $empruntAvecRetard->joursDeRetard();
-        $this->assertGreaterThan(0, $retard);
-    }
-
-    public function test_statut_devient_en_retard_si_date_depassee(): void
-    {
-        $empruntAvecRetard = new Emprunt(
-            '2',
-            $this->lecteur,
-            $this->exemplaire,
-            new \DateTimeImmutable('2024-01-01'),
-            new \DateTimeImmutable('2024-01-10')
-        );
-
-        $this->assertEquals(StatutEmprunt::EN_RETARD, $empruntAvecRetard->statut());
-    }
-}
+test('joursDeRetard retourne le bon nombre de jours de retard pour un emprunt en cours', function () {
+    $dateEmprunt = new \DateTimeImmutable('2023-01-01');
+    $dateRetourPrevue = new \DateTimeImmutable('2023-01-10');
+    $emprunt = new Emprunt($this->lecteur, $this->exemplaire, $dateEmprunt, $dateRetourPrevue);
+    $dateRetourEffective = new \DateTimeImmutable('2023-01-15');
+    $emprunt->cloturer($dateRetourEffective);
+    expect($emprunt->joursDeRetard())->toBe(5);
+});

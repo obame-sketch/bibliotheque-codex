@@ -3,77 +3,52 @@
 namespace Tests\Domain\Lecteur;
 
 use App\Domain\Lecteur\Lecteur;
-use PHPUnit\Framework\TestCase;
 
-class LecteurTest extends TestCase
-{
-    private Lecteur $lecteur;
+test('un lecteur peut être créé avec des données valides', function () {
+    $date = new \DateTimeImmutable('2023-01-01');
+    $lecteur = new Lecteur(
+        nom: 'Dupont',
+        prenom: 'Jean',
+        email: 'jean.dupont@example.com',
+        dateAdhesion: $date,
+        id: 'abc'
+    );
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->lecteur = new Lecteur(
-            id: '1',
-            nom: 'Dupont',
-            prenom: 'Jean',
-            email: 'jean.dupont@example.com',
-            dateAdhesion: new \DateTimeImmutable('2024-01-01')
-        );
-    }
+    expect($lecteur->id())->toBe('abc');
+    expect($lecteur->nom())->toBe('Dupont');
+    expect($lecteur->prenom())->toBe('Jean');
+    expect($lecteur->email())->toBe('jean.dupont@example.com');
+    expect($lecteur->dateAdhesion())->toEqual($date);
+});
 
-    public function test_lecteur_creation(): void
-    {
-        $this->assertEquals('1', $this->lecteur->id());
-        $this->assertEquals('Dupont', $this->lecteur->nom());
-        $this->assertEquals('Jean', $this->lecteur->prenom());
-        $this->assertEquals('jean.dupont@example.com', $this->lecteur->email());
-    }
+test('le constructeur valide l\'email', function () {
+    new Lecteur('Dupont', 'Jean', 'invalid-email', new \DateTimeImmutable);
+})->throws(\InvalidArgumentException::class, 'L\'adresse e-mail fournie est invalide.');
 
-    public function test_nom_ne_peut_pas_etre_vide(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        new Lecteur('1', '', 'Jean', 'email@test.com', new \DateTimeImmutable);
-    }
+test('un lecteur est adhérent actif si la date d\'adhésion est passée', function () {
+    $lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable('-1 day'));
+    expect($lecteur->estAdherentActif())->toBeTrue();
+});
 
-    public function test_prenom_ne_peut_pas_etre_vide(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        new Lecteur('1', 'Dupont', '', 'email@test.com', new \DateTimeImmutable);
-    }
+test('un lecteur n\'est pas adhérent si la date d\'adhésion est future', function () {
+    $lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable('+1 day'));
+    expect($lecteur->estAdherentActif())->toBeFalse();
+});
 
-    public function test_email_invalide_leve_exception(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        new Lecteur('1', 'Dupont', 'Jean', 'email-invalide', new \DateTimeImmutable);
-    }
+test('on peut changer l\'email avec validation', function () {
+    $lecteur = new Lecteur('Dupont', 'Jean', 'old@test.com', new \DateTimeImmutable);
+    $lecteur->changerEmail('new@test.com');
+    expect($lecteur->email())->toBe('new@test.com');
+});
 
-    public function test_changer_email_valide(): void
-    {
-        $this->lecteur->changerEmail('nouveau@example.com');
-        $this->assertEquals('nouveau@example.com', $this->lecteur->email());
-    }
+test('changerEmail lève une exception si email invalide', function () {
+    $lecteur = new Lecteur('Dupont', 'Jean', 'old@test.com', new \DateTimeImmutable);
+    $lecteur->changerEmail('invalid');
+})->throws(\InvalidArgumentException::class);
 
-    public function test_renommer(): void
-    {
-        $this->lecteur->renommer('Martin', 'Paul');
-        $this->assertEquals('Martin', $this->lecteur->nom());
-        $this->assertEquals('Paul', $this->lecteur->prenom());
-    }
-
-    public function test_est_adherent_actif_pour_date_passee(): void
-    {
-        $this->assertTrue($this->lecteur->estAdherentActif());
-    }
-
-    public function test_est_adherent_actif_pour_date_future(): void
-    {
-        $futureLecteur = new Lecteur(
-            '2',
-            'Dupont',
-            'Jean',
-            'email@test.com',
-            new \DateTimeImmutable('2099-01-01')
-        );
-        $this->assertFalse($futureLecteur->estAdherentActif());
-    }
-}
+test('on peut renommer un lecteur', function () {
+    $lecteur = new Lecteur('Dupont', 'Jean', 'jean@test.com', new \DateTimeImmutable);
+    $lecteur->renommer('Martin', 'Marie');
+    expect($lecteur->nom())->toBe('Martin');
+    expect($lecteur->prenom())->toBe('Marie');
+});

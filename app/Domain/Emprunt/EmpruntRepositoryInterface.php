@@ -18,7 +18,7 @@ interface EmpruntRepositoryInterface
 
     public function findAll(): array;
 
-    public function save(Emprunt $emprunt): void;
+    public function save(Emprunt $emprunt): ?Emprunt;
 
     public function findByExemplaireId(string $exemplaireId): array;
 }
