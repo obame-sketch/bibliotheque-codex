@@ -53,7 +53,6 @@ test('enregistrerEmprunt marque l\'exemplaire comme emprunté et sauvegarde l\'e
             // On peut utiliser reflection ou simplement retourner l'emprunt avec un ID
             $reflection = new \ReflectionClass($emprunt);
             $property = $reflection->getProperty('id');
-            $property->setAccessible(true);
             $property->setValue($emprunt, 'new-id');
 
             return $emprunt;
@@ -96,7 +95,6 @@ test('emprunter récupère un exemplaire disponible et appelle enregistrerEmprun
         ->andReturnUsing(function ($emprunt) {
             $reflection = new \ReflectionClass($emprunt);
             $property = $reflection->getProperty('id');
-            $property->setAccessible(true);
             $property->setValue($emprunt, 'emprunt-id');
 
             return $emprunt;

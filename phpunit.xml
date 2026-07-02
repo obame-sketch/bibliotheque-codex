@@ -9,15 +9,27 @@
         <testsuite name="Tests">
             <directory>tests</directory>
         </testsuite>
+        <testsuite name="tests">
+            <directory>tests</directory>
+        </testsuite>
         <testsuite name="Domain">
+            <directory>tests/Domain</directory>
+        </testsuite>
+        <testsuite name="domain">
             <directory>tests/Domain</directory>
         </testsuite>
         <testsuite name="Application">
             <directory>tests/Application</directory>
         </testsuite>
-        <!-- <testsuite name="Infrastructure">
+        <testsuite name="application">
+            <directory>tests/Application</directory>
+        </testsuite>
+        <testsuite name="Infrastructure">
             <directory>tests/Infrastructure</directory>
-        </testsuite> -->
+        </testsuite>
+        <testsuite name="infrastructure">
+            <directory>tests/Infrastructure</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
