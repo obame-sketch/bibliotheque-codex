@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Domain\Emprunt\StatutEmprunt;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -28,7 +27,6 @@ class EmpruntModel extends AbstractModel
      * @var array<int, string>
      */
     protected $fillable = [
-        'id',
         'lecteur_id',
         'exemplaire_id',
         'date_emprunt',

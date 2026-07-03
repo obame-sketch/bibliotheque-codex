@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Infrastructure\Persistence\Eloquent\Models\LecteurModel;
-use App\Infrastructure\Persistence\Eloquent\Models\EmpruntModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 beforeEach(function () {
-    $this->model = new LecteurModel();
+    $this->model = new LecteurModel;
 });
 
 test('lecteur model extends eloquent model', function () {

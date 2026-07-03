@@ -6,14 +6,12 @@ namespace App\Tests\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Domain\Exemplaire\StatutExemplaire;
 use App\Infrastructure\Persistence\Eloquent\Models\ExemplaireModel;
-use App\Infrastructure\Persistence\Eloquent\Models\LivreModel;
-use App\Infrastructure\Persistence\Eloquent\Models\EmpruntModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 beforeEach(function () {
-    $this->model = new ExemplaireModel();
+    $this->model = new ExemplaireModel;
 });
 
 test('exemplaire model extends eloquent model', function () {

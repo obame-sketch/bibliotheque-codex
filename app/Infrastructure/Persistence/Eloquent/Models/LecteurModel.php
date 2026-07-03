@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -27,7 +26,6 @@ class LecteurModel extends AbstractModel
      * @var array<int, string>
      */
     protected $fillable = [
-        'id',
         'nom',
         'prenom',
         'email',

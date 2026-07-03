@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Domain\Exemplaire\StatutExemplaire;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -29,7 +28,6 @@ class ExemplaireModel extends AbstractModel
      * @var array<int, string>
      */
     protected $fillable = [
-        'id',
         'livre_id',
         'code_barre',
         'statut',

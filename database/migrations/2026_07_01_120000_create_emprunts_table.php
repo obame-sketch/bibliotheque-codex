@@ -9,13 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('emprunts', function (Blueprint $table) {
-            $table->string('id', 36)->primary();
-            $table->string('lecteur_id', 36);
-            $table->string('exemplaire_id', 36);
+            $table->uuid('id')->primary();
+            $table->uuid('lecteur_id')->foreignUuid()->references('id')->on('lecteurs')->nullable()->onDelete('set null');
+            $table->uuid('exemplaire_id')->foreignUuid()->references('id')->on('exemplaires')->onDelete('cascade');
             $table->dateTime('date_emprunt');
             $table->dateTime('date_retour_prevue');
             $table->dateTime('date_retour_effective')->nullable();
             $table->string('statut');
+            $table->timestamps();
         });
     }
 

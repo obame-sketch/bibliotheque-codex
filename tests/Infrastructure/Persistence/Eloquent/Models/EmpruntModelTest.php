@@ -6,13 +6,11 @@ namespace App\Tests\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Domain\Emprunt\StatutEmprunt;
 use App\Infrastructure\Persistence\Eloquent\Models\EmpruntModel;
-use App\Infrastructure\Persistence\Eloquent\Models\LecteurModel;
-use App\Infrastructure\Persistence\Eloquent\Models\ExemplaireModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 beforeEach(function () {
-    $this->model = new EmpruntModel();
+    $this->model = new EmpruntModel;
 });
 
 test('emprunt model extends eloquent model', function () {

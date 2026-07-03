@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Infrastructure\Persistence\Eloquent\Models\LivreModel;
-use App\Infrastructure\Persistence\Eloquent\Models\ExemplaireModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 beforeEach(function () {
-    $this->model = new LivreModel();
+    $this->model = new LivreModel;
 });
 
 test('livre model extends eloquent model', function () {

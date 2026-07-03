@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
 /**
  * Modèle Eloquent représentant un bibliothécaire.
  *
@@ -26,7 +24,6 @@ class BibliothecaireModel extends AbstractModel
      * @var array<int, string>
      */
     protected $fillable = [
-        'id',
         'nom',
         'prenom',
         'email',

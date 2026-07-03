@@ -8,7 +8,7 @@ use App\Infrastructure\Persistence\Eloquent\Models\BibliothecaireModel;
 use Illuminate\Database\Eloquent\Model;
 
 beforeEach(function () {
-    $this->model = new BibliothecaireModel();
+    $this->model = new BibliothecaireModel;
 });
 
 test('bibliothecaire model extends eloquent model', function () {
@@ -44,6 +44,7 @@ test('bibliothecaire model has no relationship methods', function () {
     $relationCandidates = array_filter($methods, function ($method) use ($reflection) {
         $declaredInCurrentClass = $method->getDeclaringClass()->getName() === $reflection->getName();
         $name = $method->getName();
+
         return $declaredInCurrentClass
             && preg_match('/^(hasMany|belongsTo|hasOne|morphMany|morphTo|morphToMany|belongsToMany)$/', $name) === 1;
     });
