@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
+use App\Domain\Bibliothecaire\Bibliothecaire;
+use App\Domain\Bibliotheque\Bibliotheque;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -13,34 +16,48 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class LivreModel extends AbstractModel
 {
-    /**
-     * Nom de la table associée.
-     *
-     * @var string
-     */
     protected $table = 'livres';
 
     /**
-     * Attributs mass assignables.
-     *
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',
         'titre',
         'auteur',
         'isbn',
         'date_publication',
+        'bibliotheque_id',
+        'bibliothecaire_id',
     ];
 
     /**
-     * Casts de types.
-     *
      * @var array<string, string>
      */
     protected $casts = [
         'id' => 'string',
         'date_publication' => 'date',
     ];
+
+    /**
+     * Relation : un livre appartient à une bibliothèque.
+     *
+     * @return BelongsTo<BibliothequeModel>
+     */
+    public function bibliotheque(): BelongsTo
+    {
+        return $this->belongsTo(BibliothequeModel::class);
+    }
+
+    /**
+     * Relation : un livre appartient à un bibliothécaire.
+     *
+     * @return BelongsTo<BibliothecaireModel>
+     */
+    public function bibliothecaire(): BelongsTo
+    {
+        return $this->belongsTo(BibliothecaireModel::class);
+    }
 
     /**
      * Relation : un livre possède plusieurs exemplaires.

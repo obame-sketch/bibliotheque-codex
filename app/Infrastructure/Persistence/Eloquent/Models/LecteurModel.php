@@ -26,6 +26,7 @@ class LecteurModel extends AbstractModel
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',
         'nom',
         'prenom',
         'email',

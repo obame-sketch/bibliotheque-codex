@@ -14,6 +14,9 @@ return new class extends Migration
             $table->string('auteur');
             $table->string('isbn');
             $table->date('date_publication');
+            $table->uuid('bibliothecaire_id');
+            $table->foreign('bibliothecaire_id')->references('id')->on('bibliothecaires')->restrictOnDelete();
+            $table->index('bibliothecaire_id');
         });
     }
 

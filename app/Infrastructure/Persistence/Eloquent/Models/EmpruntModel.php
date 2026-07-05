@@ -27,6 +27,7 @@ class EmpruntModel extends AbstractModel
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',
         'lecteur_id',
         'exemplaire_id',
         'date_emprunt',

@@ -28,6 +28,7 @@ class ExemplaireModel extends AbstractModel
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',
         'livre_id',
         'code_barre',
         'statut',

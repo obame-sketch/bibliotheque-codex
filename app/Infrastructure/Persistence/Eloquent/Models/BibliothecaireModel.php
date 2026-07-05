@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 /**
  * Modèle Eloquent représentant un bibliothécaire.
  *
@@ -24,8 +27,19 @@ class BibliothecaireModel extends AbstractModel
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',
         'nom',
         'prenom',
         'email',
     ];
+
+    /**
+     * Relation : un bibliothécaire gère plusieurs livres.
+     *
+     * @return HasMany<LivreModel>
+     */
+    public function livres(): HasMany
+    {
+        return $this->hasMany(LivreModel::class);
+    }
 }

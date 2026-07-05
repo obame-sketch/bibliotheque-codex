@@ -11,6 +11,8 @@ return new class extends Migration
         Schema::create('exemplaires', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('livre_id');
+            $table->foreign('livre_id')->references('id')->on('livres')->cascadeOnDelete();
+            $table->index('livre_id');
             $table->string('code_barre');
             $table->string('statut');
         });

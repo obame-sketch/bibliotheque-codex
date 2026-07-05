@@ -6,6 +6,7 @@ namespace App\Tests\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Infrastructure\Persistence\Eloquent\Models\BibliothecaireModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 beforeEach(function () {
     $this->model = new BibliothecaireModel;
@@ -38,15 +39,9 @@ test('bibliothecaire model has id cast to string', function () {
     expect($this->model->getCasts())->toHaveKey('id', 'string');
 });
 
-test('bibliothecaire model has no relationship methods', function () {
+test('bibliothecaire model has livres hasmany relation method', function () {
     $reflection = new \ReflectionClass($this->model);
-    $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
-    $relationCandidates = array_filter($methods, function ($method) use ($reflection) {
-        $declaredInCurrentClass = $method->getDeclaringClass()->getName() === $reflection->getName();
-        $name = $method->getName();
-
-        return $declaredInCurrentClass
-            && preg_match('/^(hasMany|belongsTo|hasOne|morphMany|morphTo|morphToMany|belongsToMany)$/', $name) === 1;
-    });
-    expect($relationCandidates)->toBeEmpty();
+    expect($reflection->hasMethod('livres'))->toBeTrue();
+    $method = $reflection->getMethod('livres');
+    expect($method->getReturnType()?->getName())->toBe(HasMany::class);
 });
