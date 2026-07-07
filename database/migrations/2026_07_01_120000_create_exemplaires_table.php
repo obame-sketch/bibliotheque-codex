@@ -1,0 +1,25 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('exemplaires', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('livre_id');
+            $table->foreign('livre_id')->references('id')->on('livres')->cascadeOnDelete();
+            $table->index('livre_id');
+            $table->string('code_barre');
+            $table->string('statut');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('exemplaires');
+    }
+};

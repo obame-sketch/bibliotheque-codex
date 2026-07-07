@@ -15,9 +15,9 @@
         <testsuite name="Application">
             <directory>tests/Application</directory>
         </testsuite>
-        <!-- <testsuite name="Infrastructure">
+        <testsuite name="Infrastructure">
             <directory>tests/Infrastructure</directory>
-        </testsuite> -->
+        </testsuite>
     </testsuites>
     <source>
         <include>
