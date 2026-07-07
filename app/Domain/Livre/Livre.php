@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Livre;
 
+use App\Domain\Bibliothecaire\Bibliothecaire;
+use App\Domain\Bibliotheque\Bibliotheque;
+
 /**
  * Entité de domaine représentant un Livre dans la bibliothèque numérique.
  *
@@ -12,6 +15,7 @@ namespace App\Domain\Livre;
  * - Titre et auteur
  * - ISBN (International Standard Book Number) pour l'identification unique
  * - Date de publication
+ * - Bibliothèque propriétaire (établissement)
  *
  * Responsabilités :
  * - Valider les données du livre (champs non vides)
@@ -21,20 +25,10 @@ namespace App\Domain\Livre;
  */
 final class Livre
 {
-    /**
-     * Constructeur du Livre
-     *
-     * Initialise une nouvelle instance de Livre avec les informations essentielles.
-     * Valide que les champs texte (titre, auteur, isbn) ne sont pas vides.
-     *
-     * @param  string|null  $id  Identifiant unique du livre
-     * @param  string  $titre  Titre du livre (ne doit pas être vide)
-     * @param  string  $auteur  Auteur du livre (ne doit pas être vide)
-     * @param  string  $isbn  ISBN du livre (ne doit pas être vide)
-     * @param  \DateTimeImmutable  $datePublication  Date de publication du livre
-     *
-     * @throws \InvalidArgumentException Si le titre, auteur ou isbn est vide
-     */
+    private Bibliotheque $bibliotheque;
+
+    private ?Bibliothecaire $bibliothecaire = null;
+
     public function __construct(
         private string $titre,
         private string $auteur,
@@ -45,6 +39,26 @@ final class Livre
         $this->guardNonVide($titre, 'titre');
         $this->guardNonVide($auteur, 'auteur');
         $this->guardNonVide($isbn, 'isbn');
+    }
+
+    public function bibliotheque(): Bibliotheque
+    {
+        return $this->bibliotheque;
+    }
+
+    public function setBibliotheque(Bibliotheque $bibliotheque): void
+    {
+        $this->bibliotheque = $bibliotheque;
+    }
+
+    public function bibliothecaire(): ?Bibliothecaire
+    {
+        return $this->bibliothecaire;
+    }
+
+    public function setBibliothecaire(Bibliothecaire $bibliothecaire): void
+    {
+        $this->bibliothecaire = $bibliothecaire;
     }
 
     /**
