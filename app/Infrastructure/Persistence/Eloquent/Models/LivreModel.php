@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
-use App\Domain\Bibliothecaire\Bibliothecaire;
-use App\Domain\Bibliotheque\Bibliotheque;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
