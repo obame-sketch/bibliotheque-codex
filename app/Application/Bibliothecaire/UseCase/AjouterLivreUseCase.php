@@ -10,6 +10,7 @@ use App\Domain\Exemplaire\ExemplaireRepositoryInterface;
 use App\Domain\Exemplaire\StatutExemplaire;
 use App\Domain\Livre\Livre;
 use App\Domain\Livre\LivreRepositoryInterface;
+use Illuminate\Support\Str;
 
 /**
  * Cas d'utilisation pour l'ajout d'un nouveau livre et de ses exemplaires.
@@ -28,12 +29,18 @@ final class AjouterLivreUseCase
      */
     public function execute(AjouterLivreDto $dto): Livre
     {
+        $isbn = trim($dto->isbn);
+        if ($isbn === '') {
+            $isbn = sprintf('ISBN-%s', strtoupper((string) Str::uuid()));
+        }
+
         $livre = new Livre(
             id: null,
             titre: $dto->titre,
             auteur: $dto->auteur,
-            isbn: $dto->isbn,
+            isbn: $isbn,
             datePublication: $dto->datePublication,
+            categorie: $dto->categorie,
         );
         $livreSauvegarder = $this->livreRepository->save($livre);
         for ($index = 0; $index < $dto->nombreExemplaires; $index++) {
@@ -43,9 +50,9 @@ final class AjouterLivreUseCase
                 statut: StatutExemplaire::DISPONIBLE,
             );
             $exemplaire->setLivre($livreSauvegarder);
-            $exemplaireRepository->save($exemplaire);
+            $this->exemplaireRepository->save($exemplaire);
         }
 
-        return $livre;
+        return $livreSauvegarder;
     }
 }

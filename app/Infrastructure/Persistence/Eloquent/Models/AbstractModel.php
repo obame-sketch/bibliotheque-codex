@@ -36,4 +36,6 @@ abstract class AbstractModel extends Model
     protected $casts = [
         'id' => 'string',
     ];
+
+    public $timestamps = false;
 }

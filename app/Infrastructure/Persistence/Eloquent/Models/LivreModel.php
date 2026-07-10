@@ -26,6 +26,7 @@ class LivreModel extends AbstractModel
         'titre',
         'auteur',
         'isbn',
+        'categorie',
         'date_publication',
         'bibliotheque_id',
         'bibliothecaire_id',

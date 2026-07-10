@@ -21,6 +21,8 @@ class EmpruntModel extends AbstractModel
      */
     protected $table = 'emprunts';
 
+    public $timestamps = true;
+
     /**
      * Attributs mass assignables.
      *

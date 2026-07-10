@@ -9,11 +9,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('livres', function (Blueprint $table) {
-            $table->uuid('bibliotheque_id')->after('id');
+            $table->uuid('bibliotheque_id')->nullable()->after('id');
             $table->foreign('bibliotheque_id')
                 ->references('id')
                 ->on('bibliotheques')
-                ->restrictOnDelete();
+                ->nullOnDelete();
         });
     }
 

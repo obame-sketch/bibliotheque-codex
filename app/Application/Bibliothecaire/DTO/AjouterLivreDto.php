@@ -15,6 +15,7 @@ final readonly class AjouterLivreDto
      * @param  string  $isbn  Code ISBN
      * @param  \DateTimeImmutable  $datePublication  Date de parution
      * @param  int  $nombreExemplaires  Nombre de copies à ajouter initialement
+     * @param  string  $categorie  Catégorie du livre
      */
     public function __construct(
         public string $titre,
@@ -22,6 +23,7 @@ final readonly class AjouterLivreDto
         public string $isbn,
         public \DateTimeImmutable $datePublication,
         public int $nombreExemplaires,
+        public string $categorie = '',
     ) {}
 }
 

@@ -25,7 +25,7 @@ use App\Domain\Bibliotheque\Bibliotheque;
  */
 final class Livre
 {
-    private Bibliotheque $bibliotheque;
+    private ?Bibliotheque $bibliotheque = null;
 
     private ?Bibliothecaire $bibliothecaire = null;
 
@@ -34,6 +34,7 @@ final class Livre
         private string $auteur,
         private string $isbn,
         private \DateTimeImmutable $datePublication,
+        private string $categorie = '',
         private ?string $id = null
     ) {
         $this->guardNonVide($titre, 'titre');
@@ -41,7 +42,7 @@ final class Livre
         $this->guardNonVide($isbn, 'isbn');
     }
 
-    public function bibliotheque(): Bibliotheque
+    public function bibliotheque(): ?Bibliotheque
     {
         return $this->bibliotheque;
     }
@@ -64,9 +65,9 @@ final class Livre
     /**
      * Récupère l'identifiant unique du livre
      *
-     * @return string L'identifiant du livre
+     * @return string|null L'identifiant du livre
      */
-    public function id(): string
+    public function id(): ?string
     {
         return $this->id;
     }
@@ -109,6 +110,14 @@ final class Livre
     public function datePublication(): \DateTimeImmutable
     {
         return $this->datePublication;
+    }
+
+    /**
+     * Récupère la catégorie du livre
+     */
+    public function categorie(): string
+    {
+        return $this->categorie;
     }
 
     /**

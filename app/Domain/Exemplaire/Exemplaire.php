@@ -35,14 +35,14 @@ final class Exemplaire
         return $this->livre;
     }
 
-    public function id(): string
+    public function id(): ?string
     {
         return $this->id;
     }
 
-    public function livreId(): string
+    public function livreId(): ?string
     {
-        return $this->livre->id();
+        return $this->livre?->id();
     }
 
     public function codeBarre(): string
